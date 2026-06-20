@@ -195,6 +195,28 @@ See [`packages/core/lib/zones.dart`](./packages/core/lib/zones.dart) and
 
 ---
 
+## Live deployment
+
+The backend is **already deployed** to Railway and reachable at:
+
+```
+https://rickbo-production.up.railway.app
+```
+
+Free public endpoints (no JWT):
+
+- `GET /pricing/zones` — list of 5 zones
+- `GET /pricing/fare?from=A&to=C&mode=reserve` — fixed fare
+- `GET /s/<token>` — public "सफ़र शेयर करें" page (ride-share tracker)
+
+Full API requires the JWT from `POST /auth/test-otp/verify`. Flutter apps default to
+this URL; the **Dev Settings** screen in each app lets you switch to localhost for
+emulator / physical-phone LAN testing.
+
+Database: Neon PostgreSQL (PostGIS) — provisioned via the Neon free tier.
+
+---
+
 ## Build order
 
 This project was built phase by phase — see [`CLAUDE.md`](./CLAUDE.md) Section 8.

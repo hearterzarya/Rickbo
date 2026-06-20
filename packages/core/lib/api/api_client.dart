@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _prefKeyBaseUrl = 'api_base_url';
 const _prefKeyToken = 'auth_token';
 
-// Default for Android emulator; user changes this in Dev Settings for physical phone
-const _defaultBaseUrl = 'http://10.0.2.2:4000';
+// Default: deployed Rickbo backend on Railway. Local dev builds can switch via the Dev Settings screen.
+const _defaultBaseUrl = 'https://rickbo-production.up.railway.app';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._();

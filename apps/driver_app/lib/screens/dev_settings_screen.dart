@@ -34,6 +34,7 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
     if (url.contains('10.0.2.2')) return 'Android emulator';
     if (url.contains('127.0.0.1') || url.contains('localhost')) return 'iOS sim / web';
     if (url.contains('192.168.')) return 'Physical phone (LAN)';
+    if (url.contains('railway.app')) return '☁️  Live (Railway)';
     return '';
   }
 
@@ -81,6 +82,7 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
           _Hint(text: 'Android emulator → http://10.0.2.2:4000'),
           _Hint(text: 'iOS sim / web → http://127.0.0.1:4000'),
           _Hint(text: 'Physical phone → PC के LAN IP पे (http://192.168.x.x:4000)'),
+          _Hint(text: '☁️  Live (Railway) → https://rickbo-production.up.railway.app'),
           const Spacer(),
           ElevatedButton(onPressed: _saving ? null : _save, child: const Text('सेव')),
         ]),

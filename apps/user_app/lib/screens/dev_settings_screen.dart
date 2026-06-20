@@ -77,6 +77,7 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
             _hint('Android emulator', 'http://10.0.2.2:4000'),
             _hint('iOS simulator / web', 'http://127.0.0.1:4000'),
             _hint('Physical phone (LAN)', 'http://<PC-LAN-IP>:4000'),
+            _hint('☁️  Live (Railway)', 'https://rickbo-production.up.railway.app'),
             const SizedBox(height: 28),
             ElevatedButton(onPressed: _save, child: const Text('Save & Apply')),
           ],

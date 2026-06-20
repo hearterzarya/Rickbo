@@ -1,0 +1,134 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  phone      String   @unique
+  name       String?
+  photoUrl   String?
+  fcmToken   String?
+  trustScore Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  rides      Ride[]
+}
+
+model Driver {
+  id                     String       @id @default(cuid())
+  phone                  String       @unique
+  name                   String?
+  photoUrl               String?
+  rickshawNumber         String?
+  aadhaarVerified        Boolean      @default(false)
+  policeVerified         Boolean      @default(false)
+  status                 DriverStatus @default(PENDING)
+  isOnline               Boolean      @default(false)
+  // Stored as floats for MVP; PostGIS ST_DWithin queries use $queryRaw in matching service
+  locationLat            Float?
+  locationLng            Float?
+  fcmToken               String?
+  subscriptionValidUntil DateTime?
+  ratingAvg              Float        @default(0)
+  createdAt              DateTime     @default(now())
+
+  rides      Ride[]
+}
+
+enum DriverStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model Ride {
+  id             String     @id @default(cuid())
+  userId         String
+  driverId       String?
+  mode           RideMode
+  fromZone       String
+  toZone         String
+  pickupLat      Float
+  pickupLng      Float
+  dropLat        Float?
+  dropLng        Float?
+  fare           Int
+  passengerCount Int        @default(1)
+  status         RideStatus @default(REQUESTED)
+  otp            String?
+  gpsPath        Json?
+  // Public share link token so passengers can share live ride status with family/friends.
+  shareToken     String?    @unique
+  requestedAt    DateTime   @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+
+  user       User      @relation(fields: [userId], references: [id])
+  driver     Driver?   @relation(fields: [driverId], references: [id])
+  sosEvents  SosEvent[]
+  ratings    Rating[]
+  complaints Complaint[]
+}
+
+enum RideMode {
+  RESERVE
+  SHARE
+}
+
+enum RideStatus {
+  REQUESTED
+  MATCHED
+  ARRIVED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model SosEvent {
+  id        String      @id @default(cuid())
+  rideId    String
+  raisedBy  SosRaisedBy
+  lat       Float
+  lng       Float
+  createdAt DateTime    @default(now())
+  resolved  Boolean     @default(false)
+  notes     String?
+
+  ride Ride @relation(fields: [rideId], references: [id])
+}
+
+enum SosRaisedBy {
+  USER
+  DRIVER
+}
+
+// 'by' stores the id of whoever gave the rating (user or driver id as string)
+model Rating {
+  id      String  @id @default(cuid())
+  rideId  String
+  by      String
+  stars   Int
+  comment String?
+
+  ride Ride @relation(fields: [rideId], references: [id])
+}
+
+// 'against' stores the id of who is being complained about
+model Complaint {
+  id       String @id @default(cuid())
+  rideId   String
+  against  String
+  reason   String
+  severity Int    @default(1)
+  status   String @default("OPEN")
+
+  ride Ride @relation(fields: [rideId], references: [id])
+}

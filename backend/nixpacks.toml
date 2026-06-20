@@ -1,0 +1,5 @@
+# Install Postgres client + PostGIS client libs so the runtime can talk to Neon
+# (Prisma needs `libpq`; PostGIS extension is loaded server-side on Neon, so we
+# only need the client here for any optional psql-based healthchecks).
+[phases.setup]
+aptPkgs = ["postgresql-client"]

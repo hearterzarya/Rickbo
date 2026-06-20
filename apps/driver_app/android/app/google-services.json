@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "938358708218",
+    "project_id": "rickbo-22c14",
+    "storage_bucket": "rickbo-22c14.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938358708218:android:84175d61a33c32bba27643",
+        "android_client_info": {
+          "package_name": "com.rickbo.driver_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFTNc4kOE-7f0nxrZjqJD-BHCZXy2nNYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938358708218:android:7c70c2fa41b2aed9a27643",
+        "android_client_info": {
+          "package_name": "com.rickbo.user_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFTNc4kOE-7f0nxrZjqJD-BHCZXy2nNYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

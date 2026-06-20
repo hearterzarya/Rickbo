@@ -1,0 +1,62 @@
+# Node / NestJS
+node_modules/
+dist/
+.env
+.env.local
+*.log
+err.log
+out.log
+coverage/
+
+# TypeScript build
+*.tsbuildinfo
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+.idea/
+.metadata
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Dev-only debug artifacts
+_*.png
+*_after_*.png
+*_current*.png
+*_online*.png
+*_relaunch.png
+*_now.png
+*_phone*.png
+*_home*.png
+*_settings*.png
+*_screen*.png
+*_app.png
+*_perm*.png
+*_d*.png
+*_u*.png
+rickbo-*.png
+driver_*.png
+user_app_*.png
+user_*.png
+*.log
+_e2e_*.sh
+BOOKING_TEST_LOG.md
+screenshots/
+
+# Local-only working docs (not for public repo)
+plans/
+
+# Not for public repo (vendor / leak-suspect docs)
+CLAUDE-FABLE-5.md
+
+# Flutter apps already have their own .gitignore that catches platform specifics
+# (android/, ios/, etc) — but we keep the platform folders TRACKED in this monorepo
+# so other devs can see the project structure. If you want to exclude, add here.

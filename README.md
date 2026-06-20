@@ -211,3 +211,4 @@ This project was built phase by phase — see [`CLAUDE.md`](./CLAUDE.md) Section
 ## License
 
 MIT (placeholder — change before public launch).
+

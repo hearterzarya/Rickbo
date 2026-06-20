@@ -2,6 +2,8 @@
 builder = "NIXPACKS"
 
 [deploy]
+# Run Prisma migrations before starting the server
+releaseCommand = "npx prisma migrate deploy"
 # Use the compiled JS from `nest build` (output in dist/).
 startCommand = "npm run start:prod"
 # A cheap, public, JWT-free route — perfect for Railway's liveness probe.

@@ -12,6 +12,9 @@ class RideModel {
   final String status;
   final String? otp;
   final String? shareToken;
+  final String? shareGroupId;
+  final DateTime? shareDeadline;
+  final String? shareFallback;
 
   const RideModel({
     required this.id,
@@ -27,6 +30,9 @@ class RideModel {
     this.status = 'REQUESTED',
     this.otp,
     this.shareToken,
+    this.shareGroupId,
+    this.shareDeadline,
+    this.shareFallback,
   });
 
   factory RideModel.fromJson(Map<String, dynamic> json) => RideModel(
@@ -43,6 +49,11 @@ class RideModel {
         status: json['status'] as String? ?? 'REQUESTED',
         otp: json['otp'] as String?,
         shareToken: json['shareToken'] as String?,
+        shareGroupId: json['shareGroupId'] as String?,
+        shareDeadline: json['shareDeadline'] != null
+            ? DateTime.tryParse(json['shareDeadline'] as String)
+            : null,
+        shareFallback: json['shareFallback'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -59,5 +70,15 @@ class RideModel {
         'status': status,
         if (otp != null) 'otp': otp,
         if (shareToken != null) 'shareToken': shareToken,
+        if (shareGroupId != null) 'shareGroupId': shareGroupId,
+        if (shareDeadline != null) 'shareDeadline': shareDeadline!.toIso8601String(),
+        if (shareFallback != null) 'shareFallback': shareFallback,
       };
+
+  /// Seconds remaining in the SHARE 2-min window (or null if not a SHARE ride / window passed).
+  int? get shareSecondsRemaining {
+    if (shareDeadline == null) return null;
+    final diff = shareDeadline!.difference(DateTime.now()).inSeconds;
+    return diff > 0 ? diff : 0;
+  }
 }

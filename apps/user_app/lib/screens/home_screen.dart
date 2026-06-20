@@ -52,14 +52,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
       // 4. Show fare confirm sheet.
       if (!mounted) return;
-      final pax = await _showFareSheet(fromZone, toZone);
-      if (pax == null) {
+      final sheet = await _showFareSheet(fromZone, toZone);
+      if (sheet == null) {
         setState(() => _loading = false);
         return;
       }
+      final pax = sheet['pax'] as int;
+      final mode = (sheet['mode'] as String).toUpperCase();
       // 5. Create the ride → matching starts server-side.
       final ride = await RickboApi().createRide(
-        mode: 'RESERVE',
+        mode: mode,
         fromZone: fromZone,
         toZone: toZone,
         pickupLat: _pickupLat!,
@@ -69,12 +71,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(activeRideProvider.notifier).start(ActiveRide(
             rideId: ride.id,
             status: ride.status,
+            mode: ride.mode,
             fare: ride.fare,
             fromZone: fromZone,
             toZone: toZone,
             pickupLat: _pickupLat,
             pickupLng: _pickupLng,
             shareToken: ride.shareToken,
+            shareGroupId: ride.shareGroupId,
+            shareDeadline: ride.shareDeadline,
           ));
       // 6. Hook up socket listeners for this ride.
       _connectSocketForUser(ride.id);
@@ -187,14 +192,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return selected;
   }
 
-  Future<int?> _showFareSheet(String from, String to) async {
+  Future<Map<String, dynamic>?> _showFareSheet(String from, String to) async {
     final isNight = isNightTime(DateTime.now());
-    final fare = getFare(from, to, 'reserve', isNight);
     final fromName = _zones.firstWhere((z) => z['id'] == from, orElse: () => _zones.first)['name'] as String;
     final toName = _zones.firstWhere((z) => z['id'] == to, orElse: () => _zones.first)['name'] as String;
+    String mode = 'reserve'; // 'reserve' | 'share'
     int pax = 1;
+    int fare = getFare(from, to, mode, isNight);
 
-    return showModalBottomSheet<int>(
+    return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: card,
@@ -230,6 +236,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 6),
                 Text(toName, style: GoogleFonts.hind(color: ink, fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 24),
+                // Phase 4: RESERVE vs SHARE mode toggle
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ModeChip(
+                        label: 'पूरी रिक्शा',
+                        subtitle: '1–4 यात्री',
+                        icon: Icons.electric_rickshaw,
+                        selected: mode == 'reserve',
+                        onTap: () => setSheet(() {
+                          mode = 'reserve';
+                          fare = getFare(from, to, mode, isNight);
+                        }),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ModeChip(
+                        label: 'साझा सवारी',
+                        subtitle: 'सस्ती, 2 min इंतज़ार',
+                        icon: Icons.people,
+                        selected: mode == 'share',
+                        onTap: () => setSheet(() {
+                          mode = 'share';
+                          fare = getFare(from, to, mode, isNight);
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -242,18 +279,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.electric_rickshaw, color: Colors.white, size: 32),
+                      Icon(mode == 'share' ? Icons.people : Icons.electric_rickshaw, color: Colors.white, size: 32),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('पूरी रिक्शा',
+                            Text(mode == 'share' ? 'साझा सवारी — प्रति सवारी' : 'पूरी रिक्शा',
                                 style: GoogleFonts.hind(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
                             Text('₹$fare पक्का किराया',
                                 style: GoogleFonts.baloo2(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
                             if (isNight)
                               Text('रात का +₹5 जुड़ा है',
+                                  style: GoogleFonts.hind(color: const Color(0xFFFFE4A0), fontSize: 12)),
+                            if (mode == 'share')
+                              Text('अगर कोई न मिले तो "अकेले ₹25" चुनें',
                                   style: GoogleFonts.hind(color: const Color(0xFFFFE4A0), fontSize: 12)),
                           ],
                         ),
@@ -262,26 +302,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Text('यात्री:', style: GoogleFonts.hind(color: muted, fontSize: 14)),
-                    const SizedBox(width: 12),
-                    IconButton(
-                      onPressed: pax > 1 ? () => setSheet(() => pax--) : null,
-                      icon: const Icon(Icons.remove_circle_outline, color: blue),
+                if (mode == 'reserve')
+                  Row(
+                    children: [
+                      Text('यात्री:', style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        onPressed: pax > 1 ? () => setSheet(() => pax--) : null,
+                        icon: const Icon(Icons.remove_circle_outline, color: blue),
+                      ),
+                      Text('$pax', style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
+                      IconButton(
+                        onPressed: pax < 4 ? () => setSheet(() => pax++) : null,
+                        icon: const Icon(Icons.add_circle, color: blue),
+                      ),
+                      const Spacer(),
+                      Text('(1–4)', style: GoogleFonts.hind(color: muted, fontSize: 12)),
+                    ],
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: greenBright.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: greenBright.withOpacity(0.5)),
                     ),
-                    Text('$pax', style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
-                    IconButton(
-                      onPressed: pax < 4 ? () => setSheet(() => pax++) : null,
-                      icon: const Icon(Icons.add_circle, color: blue),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.timer_outlined, color: greenBright, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '2 मिनट इंतज़ार करेंगे। कोई और सवारी मिले तो ₹$fare देने होंगे। नहीं मिले तो "अकेले ₹25" चुन सकते हैं।',
+                            style: GoogleFonts.hind(color: ink, fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    Text('(1–4)', style: GoogleFonts.hind(color: muted, fontSize: 12)),
-                  ],
-                ),
+                  ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx, pax),
+                  onPressed: () => Navigator.pop(ctx, {'pax': pax, 'mode': mode}),
                   child: Text('बुक करें  →  ₹$fare'),
                 ),
                 const SizedBox(height: 8),
@@ -506,6 +568,59 @@ class _DebugCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ModeChip({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? blue : Colors.white,
+          border: Border.all(color: selected ? blue : line, width: 2),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: selected ? [blueShadow()] : [],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: selected ? Colors.white : ink, size: 24),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: GoogleFonts.baloo2(
+                          fontWeight: FontWeight.w700, fontSize: 14,
+                          color: selected ? Colors.white : ink)),
+                  Text(subtitle,
+                      style: GoogleFonts.hind(
+                          fontSize: 11,
+                          color: selected ? Colors.white70 : muted)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

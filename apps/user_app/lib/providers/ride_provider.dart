@@ -7,6 +7,7 @@ import 'package:rickbo_core/rickbo_core.dart';
 class ActiveRide {
   final String rideId;
   final String status;
+  final String mode; // 'RESERVE' | 'SHARE'
   final int fare;
   final String? otp;
   final Map<String, dynamic>? driver;
@@ -17,11 +18,14 @@ class ActiveRide {
   final String? fromZone;
   final String? toZone;
   final String? shareToken;
+  final String? shareGroupId;
+  final DateTime? shareDeadline;
   final String cancelReason;
 
   const ActiveRide({
     required this.rideId,
     required this.status,
+    this.mode = 'RESERVE',
     required this.fare,
     this.otp,
     this.driver,
@@ -32,11 +36,14 @@ class ActiveRide {
     this.fromZone,
     this.toZone,
     this.shareToken,
+    this.shareGroupId,
+    this.shareDeadline,
     this.cancelReason = '',
   });
 
   ActiveRide copyWith({
     String? status,
+    String? mode,
     int? fare,
     String? otp,
     Map<String, dynamic>? driver,
@@ -44,9 +51,12 @@ class ActiveRide {
     double? driverLng,
     String? cancelReason,
     String? shareToken,
+    String? shareGroupId,
+    DateTime? shareDeadline,
   }) => ActiveRide(
         rideId: rideId,
         status: status ?? this.status,
+        mode: mode ?? this.mode,
         fare: fare ?? this.fare,
         otp: otp ?? this.otp,
         driver: driver ?? this.driver,
@@ -57,6 +67,8 @@ class ActiveRide {
         fromZone: fromZone ?? this.fromZone,
         toZone: toZone ?? this.toZone,
         shareToken: shareToken ?? this.shareToken,
+        shareGroupId: shareGroupId ?? this.shareGroupId,
+        shareDeadline: shareDeadline ?? this.shareDeadline,
         cancelReason: cancelReason ?? this.cancelReason,
       );
 }

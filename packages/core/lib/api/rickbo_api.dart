@@ -114,6 +114,12 @@ class RickboApi {
     return RideModel.fromJson(r.data as Map<String, dynamic>);
   }
 
+  // Phase 4: share fallback action (SOLO / EXTEND / CANCEL)
+  Future<RideModel> shareAction(String rideId, String action) async {
+    final r = await _c.dio.post('/rides/$rideId/share-action', data: {'action': action});
+    return RideModel.fromJson(r.data as Map<String, dynamic>);
+  }
+
   Future<void> raiseSos({required String rideId, required double lat, required double lng}) async {
     await _c.dio.post('/sos', data: {'rideId': rideId, 'lat': lat, 'lng': lng});
   }

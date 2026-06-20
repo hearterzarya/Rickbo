@@ -48,4 +48,15 @@ export class DriversController {
   goOffline(@Request() req: { user: JwtPayload }) {
     return this.drivers.setOnline(req.user.sub, false);
   }
+
+  // Phase 4: extend a driver's subscription (dev/admin convenience; in production
+  // this would be behind an admin-role check + Razorpay webhook).
+  @UseGuards(JwtAuthGuard)
+  @Post('me/subscription/extend')
+  extendSubscription(
+    @Request() req: { user: JwtPayload },
+    @Body() body: { days: number },
+  ) {
+    return this.drivers.extendSubscription(req.user.sub, body.days);
+  }
 }

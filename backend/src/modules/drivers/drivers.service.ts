@@ -42,15 +42,43 @@ export class DriversService {
       if (driver.status === 'SUSPENDED' || driver.status === 'BANNED') {
         throw new BadRequestException('Account suspended है');
       }
+      // Phase 4: subscription check (CLAUDE.md Section 8 — block if expired)
+      if (driver.subscriptionValidUntil && driver.subscriptionValidUntil < new Date()) {
+        const days = Math.ceil((Date.now() - driver.subscriptionValidUntil.getTime()) / 86400000);
+        throw new BadRequestException(`सब्सक्रिप्शन ${days} दिन पहले ख़त्म हुआ — रिन्यू करें`);
+      }
     }
     return this.prisma.driver.update({ where: { id }, data: { isOnline: online } });
   }
 
+  // Phase 4: extend a driver's subscription by N days (admin-only in production).
+  async extendSubscription(id: string, days: number) {
+    const driver = await this.prisma.driver.findUnique({ where: { id } });
+    if (!driver) throw new NotFoundException('Driver नहीं मिला');
+    const base = driver.subscriptionValidUntil && driver.subscriptionValidUntil > new Date()
+      ? driver.subscriptionValidUntil
+      : new Date();
+    const newUntil = new Date(base.getTime() + days * 86400000);
+    return this.prisma.driver.update({
+      where: { id },
+      data: { subscriptionValidUntil: newUntil },
+    });
+  }
+
   // Haversine-based nearest driver search (good enough for a 2km town).
   // PostGIS upgrade can swap this for $queryRaw with ST_DWithin.
+  // Phase 4: also exclude drivers whose subscription has expired.
   async findNearbyOnlineDrivers(lat: number, lng: number, radiusKm = 5) {
     const drivers = await this.prisma.driver.findMany({
-      where: { isOnline: true, status: 'ACTIVE', locationLat: { not: null } },
+      where: {
+        isOnline: true,
+        status: 'ACTIVE',
+        locationLat: { not: null },
+        OR: [
+          { subscriptionValidUntil: null }, // legacy drivers with no subscription yet
+          { subscriptionValidUntil: { gt: new Date() } },
+        ],
+      },
     });
     return drivers
       .filter((d) =>

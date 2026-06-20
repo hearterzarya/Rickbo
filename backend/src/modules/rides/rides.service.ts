@@ -46,6 +46,8 @@ export class RidesService {
     );
     // 10-char share token so passengers can send family a live status link.
     const shareToken = randomBytes(8).toString('base64url');
+    // Phase 4: SHARE rides get a 2-min match window deadline. Per CLAUDE.md Section 6 Share.
+    const shareDeadline = mode === 'SHARE' ? new Date(Date.now() + 2 * 60 * 1000) : null;
     const ride = await this.prisma.ride.create({
       data: {
         userId,
@@ -58,13 +60,117 @@ export class RidesService {
         passengerCount: dto.passengerCount ?? 1,
         status: 'REQUESTED',
         shareToken,
+        shareDeadline,
+        shareDetourM: 800, // 800m detour limit for now
       },
       include: { user: true },
     });
-    this.log.log(`ride ${ride.id} created (user=${userId}, ${dto.fromZone}->${dto.toZone}, ₹${fare})`);
-    // Kick off matching asynchronously — don't block the HTTP response.
-    setImmediate(() => this.startMatching(ride.id));
+    this.log.log(`ride ${ride.id} created (user=${userId}, mode=${mode} ${dto.fromZone}->${dto.toZone}, ₹${fare})`);
+    // Phase 4: SHARE goes through a different flow (try pool first, then start a 2-min window).
+    if (mode === 'SHARE') {
+      setImmediate(() => this.startShareMatching(ride.id));
+    } else {
+      setImmediate(() => this.startMatching(ride.id));
+    }
     return ride;
+  }
+
+  // Phase 4: Share matching — try to attach to an existing share group first,
+  // otherwise wait up to 2 minutes for another passenger.
+  private async startShareMatching(rideId: string) {
+    const ride = await this.prisma.ride.findUnique({
+      where: { id: rideId },
+      include: { user: true },
+    });
+    if (!ride) return;
+    // 1. Try to find an existing SHARE ride in the same direction (REQUESTED/MATCHED/ARRIVED, same zones)
+    const existing = await this.prisma.ride.findFirst({
+      where: {
+        mode: 'SHARE',
+        fromZone: ride.fromZone,
+        toZone: ride.toZone,
+        shareGroupId: { not: null },
+        status: { in: ['MATCHED', 'ARRIVED'] }, // a driver has already accepted
+        id: { not: rideId },
+        requestedAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }, // within last 5 min
+      },
+      orderBy: { requestedAt: 'asc' },
+      include: { user: true },
+    });
+    if (existing?.shareGroupId) {
+      // Attach to existing group
+      await this.prisma.ride.update({
+        where: { id: rideId },
+        data: {
+          shareGroupId: existing.shareGroupId,
+          driverId: existing.driverId,
+          shareFallback: null,
+        },
+      });
+      this.realtime.emitToUser(ride.userId, 'ride:matched', {
+        rideId,
+        joinedGroup: true,
+        groupId: existing.shareGroupId,
+        driver: existing.driverId
+          ? { id: existing.driverId }
+          : null,
+      });
+      if (existing.driverId) {
+        this.realtime.emitToDriver(existing.driverId, 'ride:group-joined', {
+          groupId: existing.shareGroupId,
+          newPassengerPhone: ride.user.phone,
+        });
+      }
+      this.log.log(`ride ${rideId} joined share group ${existing.shareGroupId}`);
+      return;
+    }
+    // 2. No existing group → start normal matching. 2-min window. Fallback buttons via /rides/:id/share-action.
+    this.startMatching(rideId);
+  }
+
+  // Phase 4: passenger can choose a fallback before the 2-min window expires
+  //   - SOLO:  take the whole rickshaw at a flat ₹25 discount on whatever the share fare would have been
+  //   - EXTEND: extend the share window by 1 more minute
+  //   - CANCEL: cancel the share request
+  async shareAction(userId: string, rideId: string, action: 'SOLO' | 'EXTEND' | 'CANCEL') {
+    const ride = await this.prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride || ride.userId !== userId) throw new NotFoundException('सवारी नहीं मिली');
+    if (ride.mode !== 'SHARE') throw new BadRequestException('यह SHARE सवारी नहीं है');
+    if (ride.status !== 'REQUESTED') throw new BadRequestException('Share window बंद हो चुका है');
+
+    if (action === 'CANCEL') {
+      await this.prisma.ride.update({
+        where: { id: rideId },
+        data: { status: 'CANCELLED', shareFallback: 'CANCEL' },
+      });
+      this.realtime.emitToUser(userId, 'ride:cancelled', { rideId });
+      return { ok: true };
+    }
+    if (action === 'EXTEND') {
+      // Extend the share window by 60s. CLAUDE.md: "1 min aur" button.
+      const newDeadline = ride.shareDeadline
+        ? new Date(ride.shareDeadline.getTime() + 60_000)
+        : new Date(Date.now() + 60_000);
+      const updated = await this.prisma.ride.update({
+        where: { id: rideId },
+        data: { shareDeadline: newDeadline, shareFallback: 'EXTEND' },
+      });
+      this.log.log(`ride ${rideId} share window extended to ${newDeadline.toISOString()}`);
+      return updated;
+    }
+    if (action === 'SOLO') {
+      // Switch the ride to a flat ₹25 reserve fare (CLAUDE.md: "अकेले ₹25").
+      // The driver still hasn't been assigned, so we just change mode + fare.
+      const updated = await this.prisma.ride.update({
+        where: { id: rideId },
+        data: { mode: 'RESERVE', fare: 25, shareFallback: 'SOLO' },
+      });
+      this.log.log(`ride ${rideId} switched to SOLO at ₹25`);
+      // Re-trigger normal reserve matching
+      setImmediate(() => this.startMatching(rideId));
+      return updated;
+    }
+    throw new BadRequestException('action अजीब है');
   }
 
   // Send a ride offer to one driver at a time. If no accept in 20s, try next.

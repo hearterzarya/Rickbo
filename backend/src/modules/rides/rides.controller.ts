@@ -75,4 +75,16 @@ export class RidesController {
   ) {
     return this.rides.cancel(req.user.sub, req.user.role, id, body?.reason);
   }
+
+  // Phase 4: SHARE 2-min window fallback buttons.
+  // action: 'SOLO' | 'EXTEND' | 'CANCEL'
+  @Post(':id/share-action')
+  shareAction(
+    @Request() req: { user: JwtPayload },
+    @Param('id') id: string,
+    @Body() body: { action: 'SOLO' | 'EXTEND' | 'CANCEL' },
+  ) {
+    if (req.user.role !== 'user') throw new Error('Only passengers can act on share');
+    return this.rides.shareAction(req.user.sub, id, body.action);
+  }
 }

@@ -67,6 +67,14 @@ model Ride {
   gpsPath        Json?
   // Public share link token so passengers can share live ride status with family/friends.
   shareToken     String?    @unique
+  // Phase 4: a SHARE ride is part of a group (one driver, multiple passengers going the same way).
+  shareGroupId   String?
+  // Per-passenger share window deadline. After this time, fallback buttons trigger.
+  shareDeadline  DateTime?
+  // Per-passenger detour budget. Driver sees this so they don't drift too far.
+  shareDetourM   Int        @default(800)
+  // Whether the passenger gave up on share matching and took the solo fallback (₹25 discount in CLAUDE.md).
+  shareFallback  ShareFallback?
   requestedAt    DateTime   @default(now())
   startedAt      DateTime?
   completedAt    DateTime?
@@ -76,6 +84,12 @@ model Ride {
   sosEvents  SosEvent[]
   ratings    Rating[]
   complaints Complaint[]
+}
+
+enum ShareFallback {
+  SOLO       // user gave up sharing, took whole rickshaw at flat fare
+  EXTEND     // user extended the share window by 1 min
+  CANCEL     // user cancelled the share request
 }
 
 enum RideMode {

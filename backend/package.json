@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Rickbo e-rickshaw booking backend",
   "scripts": {
-    "build": "nest build && prisma generate && prisma migrate deploy && node -e \"require('fs').cpSync('public','dist/public',{recursive:true})\"",
+    "build": "nest build && prisma generate && node -e \"require('fs').cpSync('public','dist/public',{recursive:true})\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",

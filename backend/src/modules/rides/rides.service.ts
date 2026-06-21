@@ -38,13 +38,11 @@ export class RidesService {
         throw new BadRequestException('1–4 यात्री ही बुक कर सकते हैं');
       }
     }
-    const night = this.pricing.isNightNow();
-    this.log.log(`[FARE-DEBUG] from=${dto.fromZone} to=${dto.toZone} mode=${mode} utc=${new Date().toISOString()} night=${night}`);
     const fare = this.pricing.getFare(
       dto.fromZone,
       dto.toZone,
       mode.toLowerCase(),
-      night,
+      this.pricing.isNightNow(),
     );
     // 10-char share token so passengers can send family a live status link.
     const shareToken = randomBytes(8).toString('base64url');

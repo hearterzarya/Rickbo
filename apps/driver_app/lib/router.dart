@@ -41,6 +41,8 @@ class _OfferOverlayHostState extends ConsumerState<OfferOverlayHost> {
     // are lost). We re-register after every login / reconnect.
     _socket.on('ride:offer', _handleOffer);
     _wired = true;
+    // ignore: avoid_print
+    print('[driver] ride:offer listener registered');
   }
 
   @override
@@ -50,10 +52,18 @@ class _OfferOverlayHostState extends ConsumerState<OfferOverlayHost> {
   }
 
   Future<void> _handleOffer(dynamic data) async {
-    if (_busy || data is! Map) return;
+    // ignore: avoid_print
+    print('[driver] ride:offer received: $data');
+    if (_busy || data is! Map) {
+      // ignore: avoid_print
+      print('[driver] ride:offer dropped (busy=$_busy or bad data)');
+      return;
+    }
     _busy = true;
     try {
       final ctx = navigatorKey.currentContext;
+      // ignore: avoid_print
+      print('[driver] ride:offer showing dialog, ctx=${ctx != null}');
       if (ctx != null) {
         await showDialog(
           context: ctx,

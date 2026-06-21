@@ -19,6 +19,7 @@ dependencies:
   geolocator: ^11.0.0
   permission_handler: ^11.3.0
   audioplayers: ^6.0.0
+  flutter_tts: ^4.0.2
 
 dev_dependencies:
   flutter_test:

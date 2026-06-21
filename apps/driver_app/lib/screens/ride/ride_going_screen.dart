@@ -47,6 +47,8 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
     try {
       await RickboApi().markArrived(widget.rideId);
       if (!mounted) return;
+      // Phase 5: voice prompt when driver arrives at pickup.
+      RickboVoice.instance.say('पहुंच गए');
       context.go('/ride/otp', extra: {
         'rideId': widget.rideId,
         'fare': widget.fare,

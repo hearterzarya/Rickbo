@@ -23,6 +23,8 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
     try {
       await RickboApi().completeRide(widget.rideId);
       if (!mounted) return;
+      // Phase 5: voice prompt on ride completion.
+      RickboVoice.instance.say('सफ़र पूरा');
       // Show success then push to rate-user screen.
       showDialog(
         context: context,

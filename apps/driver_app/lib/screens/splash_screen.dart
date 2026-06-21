@@ -43,28 +43,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 5: branded splash — same e-rickshaw yellow + rickshaw icon, "Driver" subtitle.
     return Scaffold(
-      backgroundColor: bg,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120, height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: tintCyan,
-                boxShadow: [blueShadow(opacity: 0.35, blurRadius: 30)],
-              ),
-              child: const Icon(Icons.electric_rickshaw, size: 70, color: blue),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFE082), Color(0xFFFFC107)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 140, height: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.18),
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.electric_rickshaw, size: 84, color: blue),
+                ),
+                const SizedBox(height: 28),
+                Text('Rickbo Driver',
+                    style: GoogleFonts.baloo2(fontSize: 40, fontWeight: FontWeight.w800, color: blue)),
+                const SizedBox(height: 8),
+                Text('कमाई, बिना कमीशन',
+                    style: GoogleFonts.hind(color: ink, fontSize: 16, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 48),
+                const SizedBox(width: 32, height: 32,
+                    child: CircularProgressIndicator(strokeWidth: 3, color: blue)),
+              ],
             ),
-            const SizedBox(height: 24),
-            Text('Rickbo Driver', style: GoogleFonts.baloo2(fontSize: 36, fontWeight: FontWeight.w800, color: blue)),
-            const SizedBox(height: 6),
-            Text('कमाई, बिना कमीशन', style: GoogleFonts.hind(color: muted, fontSize: 14)),
-            const SizedBox(height: 32),
-            const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
-          ],
+          ),
         ),
       ),
     );

@@ -52,6 +52,10 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
         _autoSkip();
       }
     });
+    // Phase 5: Hindi voice prompt when an offer pops in.
+    RickboVoice.instance.say(
+      'सवारी है ${widget.fromZone} से ${widget.toZone}, ${widget.fare} रुपये',
+    );
   }
 
   @override

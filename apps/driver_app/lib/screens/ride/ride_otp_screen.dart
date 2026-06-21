@@ -33,6 +33,8 @@ class _RideOtpScreenState extends State<RideOtpScreen> {
     try {
       await RickboApi().startRide(widget.rideId, _ctrl.text.trim());
       if (!mounted) return;
+      // Phase 5: voice prompt on ride start.
+      RickboVoice.instance.say('सफ़र शुरू');
       context.go('/ride/finish', extra: {
         'rideId': widget.rideId,
         'fare': widget.fare,

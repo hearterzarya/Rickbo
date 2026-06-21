@@ -134,7 +134,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const SizedBox(height: 16),
               if (me != null) _ProfileCard(me: me, isOnline: _isOnline),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // Live map showing driver location + zone context.
+              if (_pos != null)
+                SizedBox(
+                  height: 220,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: RickboMap(
+                          centerLat: _pos!.latitude,
+                          centerLng: _pos!.longitude,
+                          zoom: 15,
+                          markers: [
+                            MapMarker(
+                              lat: _pos!.latitude,
+                              lng: _pos!.longitude,
+                              icon: Icons.electric_rickshaw,
+                              color: const Color(0xFFFF6B00),
+                              label: 'मैं',
+                            ),
+                          ],
+                          showZoneDots: true,
+                          interactive: true,
+                        ),
+                      ),
+                      Positioned(
+                        top: 12, right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _isOnline ? greenBright : card,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2)),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8, height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _isOnline ? Colors.white : muted,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _isOnline ? 'LIVE' : 'OFFLINE',
+                                style: GoogleFonts.hind(
+                                  color: _isOnline ? Colors.white : muted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 16),
               _OnlineToggle(isOnline: _isOnline, busy: _busy, onTap: _toggleOnline),
               if (_locationError != null) ...[
                 const SizedBox(height: 16),

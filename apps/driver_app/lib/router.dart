@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,8 +42,6 @@ class _OfferOverlayHostState extends ConsumerState<OfferOverlayHost> {
     // are lost). We re-register after every login / reconnect.
     _socket.on('ride:offer', _handleOffer);
     _wired = true;
-    // ignore: avoid_print
-    print('[driver] ride:offer listener registered');
   }
 
   @override
@@ -52,63 +51,39 @@ class _OfferOverlayHostState extends ConsumerState<OfferOverlayHost> {
   }
 
   Future<void> _handleOffer(dynamic data) async {
-    // ignore: avoid_print
-    print('[driver] ride:offer received: $data');
-    if (_busy || data is! Map) {
-      // ignore: avoid_print
-      print('[driver] ride:offer dropped (busy=$_busy or bad data)');
-      return;
-    }
+    if (_busy || data is! Map) return;
     _busy = true;
     try {
       final ctx = navigatorKey.currentContext;
-      // ignore: avoid_print
-      print('[driver] ride:offer showing dialog, ctx=${ctx != null}');
-      if (ctx != null) {
-        await showDialog(
-          context: ctx,
-          barrierDismissible: false,
-          builder: (dctx) => Dialog(
-            backgroundColor: Colors.transparent,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pop(dctx);
-                navigatorKey.currentState?.push(MaterialPageRoute(
-                  builder: (_) => IncomingOfferScreen(
-                    rideId: data['rideId'] as String,
-                    fromZone: data['fromZone'] as String,
-                    toZone: data['toZone'] as String,
-                    fare: data['fare'] as int,
-                    pickupLat: (data['pickupLat'] as num).toDouble(),
-                    pickupLng: (data['pickupLng'] as num).toDouble(),
-                    passengerCount: data['passengerCount'] as int? ?? 1,
-                    userName: data['userName'] as String? ?? 'यात्री',
-                  ),
-                ));
-              },
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: blue,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: blue.withOpacity(0.5), blurRadius: 24)],
-                ),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.directions_car, color: Colors.white, size: 56),
-                  const SizedBox(height: 10),
-                  Text('नई सवारी — ₹${data['fare']}',
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('${data['fromZone']} → ${data['toZone']}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                  const SizedBox(height: 16),
-                  const Text('टैप करके खोलें', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                ]),
+      if (ctx == null) return;
+      // Triple-alert: vibration + sound + TTS. Doesn't await — fires in parallel
+      // and doesn't block the dialog from showing.
+      final fromZone = data['fromZone'] as String? ?? '';
+      final toZone = data['toZone'] as String? ?? '';
+      final fare = (data['fare'] as num?)?.toInt() ?? 0;
+      unawaited(RideAlert.urgent('सवारी है $fromZone से $toZone, $fare रुपये'));
+      await showDialog(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (dctx) => _PulsingOfferDialog(
+          data: data,
+          onAccept: () {
+            Navigator.pop(dctx);
+            navigatorKey.currentState?.push(MaterialPageRoute(
+              builder: (_) => IncomingOfferScreen(
+                rideId: data['rideId'] as String,
+                fromZone: fromZone,
+                toZone: toZone,
+                fare: fare,
+                pickupLat: (data['pickupLat'] as num).toDouble(),
+                pickupLng: (data['pickupLng'] as num).toDouble(),
+                passengerCount: data['passengerCount'] as int? ?? 1,
+                userName: data['userName'] as String? ?? 'यात्री',
               ),
-            ),
-          ),
-        );
-      }
+            ));
+          },
+        ),
+      );
     } finally {
       _busy = false;
     }
@@ -194,4 +169,124 @@ GoRouter buildRouter(WidgetRef ref) {
       GoRoute(path: '/dev-settings', builder: (_, __) => const DevSettingsScreen()),
     ],
   );
+}
+
+/// Animated "नई सवारी" offer popup with a pulsing blue glow border.
+/// The whole card pulses to grab the driver's attention even when they're
+/// not looking directly at the screen. Tap → opens the full IncomingOfferScreen
+/// with हाँ / ना buttons (20s auto-decline countdown starts there).
+class _PulsingOfferDialog extends StatefulWidget {
+  final Map data;
+  final VoidCallback onAccept;
+  const _PulsingOfferDialog({required this.data, required this.onAccept});
+
+  @override
+  State<_PulsingOfferDialog> createState() => _PulsingOfferDialogState();
+}
+
+class _PulsingOfferDialogState extends State<_PulsingOfferDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fromZone = widget.data['fromZone'] as String? ?? '';
+    final toZone = widget.data['toZone'] as String? ?? '';
+    final fare = (widget.data['fare'] as num?)?.toInt() ?? 0;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: GestureDetector(
+        onTap: widget.onAccept,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (_, __) => Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: blue,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4 + 0.6 * _c.value),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: blue.withOpacity(0.4 + 0.5 * _c.value),
+                  blurRadius: 30 + 20 * _c.value,
+                  spreadRadius: 4 + 6 * _c.value,
+                ),
+              ],
+            ),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              // Big pulsing rickshaw icon.
+              Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15 + 0.15 * _c.value),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.electric_rickshaw,
+                    color: Colors.white, size: 64),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'नई सवारी!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '₹$fare',
+                  style: const TextStyle(
+                    color: blue,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '$fromZone  →  $toZone',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'टैप करके खोलें',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 }

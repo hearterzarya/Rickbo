@@ -208,6 +208,8 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
   Widget build(BuildContext context) {
     final ride = ref.watch(activeRideProvider);
     final isShare = ride?.mode == 'SHARE';
+    final pickupLat = ride?.pickupLat ?? 29.6039;
+    final pickupLng = ride?.pickupLng ?? 78.3365;
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -227,50 +229,117 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
         ),
         title: Text(isShare ? 'साझा सवारी ढूंढ रहे हैं' : 'रिक्शा ढूंढ रहे हैं'),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _RickshawPulse(isShare: isShare),
-              const SizedBox(height: 32),
-              Text(
-                isShare ? 'साझा सवारी ढूंढ रहे हैं...' : 'रिक्शा ढूंढ रहे हैं...',
-                style: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w800, color: ink),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '₹${ride?.fare ?? 0} ${isShare ? "प्रति सवारी" : "पक्का किराया"}',
-                style: GoogleFonts.hind(fontSize: 16, color: muted),
-              ),
-              const SizedBox(height: 32),
-              if (isShare && _secondsLeft > 0) ...[
-                _ShareCountdown(seconds: _secondsLeft),
-                const SizedBox(height: 12),
-                Text('2 मिनट में साझा सवारी मिलेगी',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.hind(fontSize: 13, color: muted)),
-              ] else
-                Column(
-                  children: [
-                    SizedBox(
-                      width: 220,
-                      child: LinearProgressIndicator(
-                        minHeight: 6,
-                        backgroundColor: line,
-                        color: cyan,
+      body: Column(
+        children: [
+          // Map showing pickup location with zone context.
+          SizedBox(
+            height: 260,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: RickboMap(
+                    centerLat: pickupLat,
+                    centerLng: pickupLng,
+                    zoom: 15,
+                    markers: [
+                      MapMarker(
+                        lat: pickupLat,
+                        lng: pickupLng,
+                        icon: Icons.my_location,
+                        color: blue,
+                        label: 'पिकअप',
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text('20-20 सेकंड में अगले ड्राइवर को ऑफर जाएगा',
+                    ],
+                    showZoneDots: true,
+                    interactive: true,
+                  ),
+                ),
+                // Searching overlay badge.
+                Positioned(
+                  top: 12, left: 12, right: 12,
+                  child: _SearchingBadge(isShare: isShare),
+                ),
+              ],
+            ),
+          ),
+          // Body content.
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _RickshawPulse(isShare: isShare),
+                  const SizedBox(height: 16),
+                  Text(
+                    isShare ? 'साझा सवारी ढूंढ रहे हैं...' : 'रिक्शा ढूंढ रहे हैं...',
+                    style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, color: ink),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${ride?.fromZone ?? '—'} → ${ride?.toZone ?? '—'}  •  ₹${ride?.fare ?? 0} ${isShare ? "प्रति सवारी" : "पक्का किराया"}',
+                    style: GoogleFonts.hind(fontSize: 14, color: muted),
+                  ),
+                  const SizedBox(height: 16),
+                  if (isShare && _secondsLeft > 0) ...[
+                    _ShareCountdown(seconds: _secondsLeft),
+                    const SizedBox(height: 8),
+                    Text('2 मिनट में साझा सवारी मिलेगी',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.hind(fontSize: 13, color: muted)),
-                  ],
-                ),
-            ],
+                  ] else
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          child: LinearProgressIndicator(
+                            minHeight: 5,
+                            backgroundColor: line,
+                            color: cyan,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text('20-20 सेकंड में अगले ड्राइवर को ऑफर जाएगा',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.hind(fontSize: 12, color: muted)),
+                      ],
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchingBadge extends StatelessWidget {
+  final bool isShare;
+  const _SearchingBadge({required this.isShare});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: card,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 16, height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: isShare ? greenBright : cyan),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            isShare ? 'साझा सवारी खोज रहे हैं' : 'पास के ड्राइवर खोज रहे हैं',
+            style: GoogleFonts.hind(fontSize: 13, fontWeight: FontWeight.w600, color: ink),
+          ),
+        ],
       ),
     );
   }

@@ -13,3 +13,5 @@ export 'api/rickbo_socket.dart';
 export 'widgets/hindi_error.dart';
 export 'widgets/empty_state.dart';
 export 'widgets/voice.dart';
+export 'widgets/rickbo_map.dart';
+export 'widgets/ride_alert.dart';

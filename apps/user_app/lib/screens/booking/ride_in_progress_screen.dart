@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/ride_provider.dart';
 
@@ -52,10 +53,15 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
         title: const Text('सफ़र जारी है'),
         automaticallyImplyLeading: false,
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
+      body: Column(
+        children: [
+          // Live tracking map (pickup + driver + drop zones).
+          SizedBox(
+            height: 280,
+            child: _RideProgressMap(ride: ride),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
@@ -130,21 +136,18 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                   const SizedBox(height: 16),
                   // सफ़र शेयर करें — Phase 3 live link
                   _ShareRideCard(shareToken: ride?.shareToken),
-                  const Spacer(),
+                  const SizedBox(height: 16),
                   Text('पहुँचने पर ड्राइवर "सफ़र पूरा" बटन दबाएगा।',
                       style: GoogleFonts.hind(color: muted, fontSize: 13)),
                 ],
               ),
             ),
-            Positioned(
-              right: 20, bottom: 20,
-              child: _SosButton(
-                pressed: _sosPressed,
-                onPressed: () => _sosFlow(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: _SosButton(
+        pressed: _sosPressed,
+        onPressed: () => _sosFlow(),
       ),
     );
   }
@@ -308,6 +311,60 @@ class _SosButton extends StatelessWidget {
               style: GoogleFonts.baloo2(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
         ),
       ),
+    );
+  }
+}
+
+/// Live-tracking map for the in-progress ride. Shows driver (orange) and
+/// pickup (blue) markers. Re-renders automatically when the active ride
+/// provider state changes (because parent uses ref.watch).
+class _RideProgressMap extends StatelessWidget {
+  final ActiveRide? ride;
+  const _RideProgressMap({required this.ride});
+
+  @override
+  Widget build(BuildContext context) {
+    final pickupLat = ride?.pickupLat ?? 29.6039;
+    final pickupLng = ride?.pickupLng ?? 78.3365;
+    final driverLat = ride?.driverLat;
+    final driverLng = ride?.driverLng;
+    final markers = <MapMarker>[
+      MapMarker(
+        lat: pickupLat,
+        lng: pickupLng,
+        icon: Icons.my_location,
+        color: blue,
+        label: 'पिकअप',
+      ),
+    ];
+    final routes = <MapRoute>[];
+    if (driverLat != null && driverLng != null) {
+      markers.add(MapMarker(
+        lat: driverLat,
+        lng: driverLng,
+        icon: Icons.electric_rickshaw,
+        color: const Color(0xFFFF6B00),
+        label: 'ड्राइवर',
+      ));
+      routes.add(MapRoute(
+        points: [
+          LatLng(pickupLat, pickupLng),
+          LatLng(driverLat, driverLng),
+        ],
+        color: blue,
+        width: 4,
+      ));
+    }
+    double centerLat = driverLat ?? pickupLat;
+    double centerLng = driverLng ?? pickupLng;
+    return RickboMap(
+      centerLat: centerLat,
+      centerLng: centerLng,
+      zoom: 15,
+      markers: markers,
+      routes: routes,
+      showZoneDots: true,
+      interactive: true,
     );
   }
 }

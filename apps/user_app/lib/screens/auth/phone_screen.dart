@@ -1,16 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rickbo_core/rickbo_core.dart';
+import '../../providers/auth_provider.dart';
 
-class PhoneScreen extends StatefulWidget {
+class PhoneScreen extends ConsumerStatefulWidget {
   const PhoneScreen({super.key});
 
   @override
-  State<PhoneScreen> createState() => _PhoneScreenState();
+  ConsumerState<PhoneScreen> createState() => _PhoneScreenState();
 }
 
-class _PhoneScreenState extends State<PhoneScreen> {
+class _PhoneScreenState extends ConsumerState<PhoneScreen> {
   final _ctrl = TextEditingController();
   bool _loading = false;
 
@@ -43,6 +46,35 @@ class _PhoneScreenState extends State<PhoneScreen> {
     } catch (e) {
       setState(() => _loading = false);
       _showError('Server से connect नहीं हो सका — Dev Settings में URL ठीक करें');
+    }
+  }
+
+  /// One-tap test login (DEBUG builds only). Skips Firebase AND the OTP
+  /// screen — calls /auth/test-otp which returns a JWT directly, then
+  /// routes to home or the registration screen the same way the OTP
+  /// screen does. Lets the emulator reach a working home in one tap.
+  Future<void> _quickTestLogin() async {
+    final digits = _ctrl.text.trim();
+    if (digits.length != 10) {
+      _showError('10 अंकों का नंबर डालें');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final res = await RickboApi().loginTestOtp(
+        phone: '+91$digits',
+        role: 'user',
+      );
+      final token = res['token'] as String;
+      final isNew = res['isNew'] as bool? ?? false;
+      await ApiClient().setToken(token);
+      ref.read(authProvider.notifier).setAuthenticated(token, isNew: isNew);
+      if (!mounted) return;
+      context.go(isNew ? '/auth/register' : '/');
+    } catch (e) {
+      _showError('Server से connect नहीं हो सका — Dev Settings में URL ठीक करें');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -109,6 +141,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       onPressed: _sendOtp,
                       child: const Text('OTP भेजें'),
                     ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _loading ? null : _quickTestLogin,
+                  icon: const Icon(Icons.flash_on, size: 18),
+                  label: const Text('टेस्ट लॉगिन (debug)'),
+                ),
+              ],
               const Spacer(),
               Center(
                 child: GestureDetector(

@@ -33,9 +33,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final url = _apiUrlCtrl.text.trim();
     if (url.isEmpty) return;
     await ApiClient().setBaseUrl(url);
+    // Verify the live Dio instance actually picked it up.
+    final liveUrl = ApiClient().dio.options.baseUrl;
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('API URL अपडेट हो गया')),
+        SnackBar(
+          content: Text('API URL saved → $liveUrl'),
+          duration: const Duration(seconds: 3),
+          backgroundColor: liveUrl == url ? Colors.green : Colors.orange,
+        ),
+      );
+    }
+  }
+
+  /// One-tap reset for emulator users stuck on a stale Railway URL.
+  Future<void> _resetToLocal() async {
+    await ApiClient().setBaseUrl('http://10.0.2.2:4000');
+    final liveUrl = ApiClient().dio.options.baseUrl;
+    setState(() => _apiUrlCtrl.text = liveUrl);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Reset to $liveUrl'), backgroundColor: Colors.green),
       );
     }
   }
@@ -134,7 +152,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: GoogleFonts.hind(color: muted, fontSize: 11, height: 1.4),
                   ),
                   const SizedBox(height: 8),
-                  OutlinedButton(onPressed: _saveBaseUrl, child: const Text('Save API URL')),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(onPressed: _saveBaseUrl, child: const Text('Save API URL')),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _resetToLocal,
+                          style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF10B981))),
+                          child: const Text('Reset → 10.0.2.2:4000', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

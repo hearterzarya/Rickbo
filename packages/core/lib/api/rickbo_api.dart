@@ -24,6 +24,21 @@ class RickboApi {
     return r.data as Map<String, dynamic>;
   }
 
+  /// ONE-CALL dev login: returns the full login payload (token + user/driver)
+  /// in a single round-trip. Backend auto-creates the profile if missing.
+  /// Used by the in-app "टेस्ट लॉगिन" button on the phone screen so the
+  /// emulator can land on home without swapping screens and pasting an OTP.
+  Future<Map<String, dynamic>> loginTestOtp({
+    required String phone,
+    required String role,
+  }) async {
+    final r = await _c.dio.post(
+      '/auth/test-otp',
+      data: {'phone': phone, 'role': role},
+    );
+    return r.data as Map<String, dynamic>;
+  }
+
   Future<UserModel> getUserMe() async {
     final r = await _c.dio.get('/users/me');
     return UserModel.fromJson(r.data as Map<String, dynamic>);

@@ -90,4 +90,10 @@ export class AdminController {
   zones() {
     return this.admin.listZones();
   }
+
+  // ─── Dev helpers (Phase 2 testing) ────────────────────────────
+  @Post('dev/reset-online-drivers')
+  resetOnline() {
+    return this.admin.resetOnlineDrivers();
+  }
 }

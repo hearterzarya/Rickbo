@@ -152,6 +152,18 @@ export class AdminService {
     ];
   }
 
+  // ─── Test helpers ─────────────────────────────────────────────
+  // For development only. Resets all online status to false so that the
+  // next ride create doesn't get blocked by stale online drivers from
+  // earlier test runs.
+  async resetOnlineDrivers() {
+    const result = await this.prisma.driver.updateMany({
+      where: { isOnline: true },
+      data: { isOnline: false },
+    });
+    return { driversTakenOffline: result.count };
+  }
+
   // Helper: convert Prisma "RecordNotFound" into a clean 404.
   private async notFoundSafe<T>(fn: () => Promise<T>, what: string): Promise<T> {
     try {

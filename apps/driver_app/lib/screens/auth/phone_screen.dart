@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/auth_provider.dart';
@@ -98,11 +97,11 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
               ),
               const SizedBox(height: 20),
               Center(
-                child: Text('नमस्ते ड्राइवर!', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+                child: Text('नमस्ते ड्राइवर!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               ),
               const SizedBox(height: 6),
               Center(
-                child: Text('अपना मोबाइल नंबर डालें', style: GoogleFonts.hind(color: muted, fontSize: 16)),
+                child: Text('अपना मोबाइल नंबर डालें', style: TextStyle(color: muted, fontSize: 16)),
               ),
               const SizedBox(height: 40),
               Row(
@@ -114,7 +113,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text('+91',
-                        style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w700, color: ink)),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: ink)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -122,11 +121,11 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                       controller: _ctrl,
                       keyboardType: TextInputType.phone,
                       maxLength: 10,
-                      style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
                         counterText: '',
                         labelText: 'मोबाइल नंबर',
-                        labelStyle: GoogleFonts.hind(color: muted),
+                        labelStyle: TextStyle(color: muted),
                       ),
                     ),
                   ),
@@ -149,7 +148,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                 child: GestureDetector(
                   onTap: () => context.push('/dev-settings'),
                   child: Text('Dev Settings',
-                      style: GoogleFonts.hind(
+                      style: TextStyle(
                           color: muted, fontSize: 13, decoration: TextDecoration.underline)),
                 ),
               ),

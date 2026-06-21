@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Brand palette (DESIGN.md Section 1)
 const blue      = Color(0xFF1D4ED8);
@@ -24,6 +23,11 @@ const tintGold  = Color(0xFFFFF1D6);
 BoxShadow blueShadow({double opacity = 0.25, double blurRadius = 20}) =>
     BoxShadow(color: blue.withOpacity(opacity), blurRadius: blurRadius, offset: const Offset(0, 8));
 
+// NOTE: We deliberately use the platform default font (no google_fonts
+// network fetch) so the apps work fully offline — critical for a small-town
+// e-rickshaw app where the user's phone often has poor/no data.
+const _base = TextStyle(fontFamilyFallback: ['Noto Sans Devanagari', 'Hind', 'Mangal', 'sans-serif']);
+
 ThemeData rickboTheme() {
   final base = ThemeData(
     colorScheme: ColorScheme.fromSeed(
@@ -39,15 +43,15 @@ ThemeData rickboTheme() {
   );
 
   return base.copyWith(
-    textTheme: GoogleFonts.hindTextTheme(base.textTheme).copyWith(
+    textTheme: base.textTheme.copyWith(
       // Display XL 34/800 — greeting "कहाँ चलें?"
-      displayLarge: GoogleFonts.baloo2(fontSize: 34, fontWeight: FontWeight.w800, color: ink),
+      displayLarge: _base.copyWith(fontSize: 34, fontWeight: FontWeight.w800, color: ink),
       // Display L 24/700 — card titles
-      displayMedium: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w700, color: ink),
-      headlineMedium: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w700, color: ink),
-      bodyLarge: GoogleFonts.hind(fontSize: 18, fontWeight: FontWeight.w600, color: ink),
-      bodyMedium: GoogleFonts.hind(fontSize: 16, fontWeight: FontWeight.w500, color: ink),
-      labelSmall: GoogleFonts.hind(fontSize: 13, fontWeight: FontWeight.w600, color: muted),
+      displayMedium: _base.copyWith(fontSize: 24, fontWeight: FontWeight.w700, color: ink),
+      headlineMedium: _base.copyWith(fontSize: 20, fontWeight: FontWeight.w700, color: ink),
+      bodyLarge: _base.copyWith(fontSize: 18, fontWeight: FontWeight.w600, color: ink),
+      bodyMedium: _base.copyWith(fontSize: 16, fontWeight: FontWeight.w500, color: ink),
+      labelSmall: _base.copyWith(fontSize: 13, fontWeight: FontWeight.w600, color: muted),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -55,7 +59,7 @@ ThemeData rickboTheme() {
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        textStyle: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w700),
+        textStyle: _base.copyWith(fontSize: 18, fontWeight: FontWeight.w700),
         elevation: 0,
       ),
     ),
@@ -72,7 +76,7 @@ ThemeData rickboTheme() {
       foregroundColor: ink,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      titleTextStyle: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w700, color: ink),
+      titleTextStyle: _base.copyWith(fontSize: 20, fontWeight: FontWeight.w700, color: ink),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(

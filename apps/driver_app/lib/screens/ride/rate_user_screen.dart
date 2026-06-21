@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 /// After a ride finishes, the driver briefly rates the passenger (1–5 stars).
@@ -55,7 +54,7 @@ class _RateUserScreenState extends State<RateUserScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text('सवारी कैसी रही?', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+              Text('सवारी कैसी रही?', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -69,12 +68,12 @@ class _RateUserScreenState extends State<RateUserScreen> {
                 )),
               ),
               const SizedBox(height: 8),
-              Center(child: Text('${_stars}/5', style: GoogleFonts.baloo2(color: muted, fontSize: 18, fontWeight: FontWeight.w700))),
+              Center(child: Text('${_stars}/5', style: TextStyle(color: muted, fontSize: 18, fontWeight: FontWeight.w700))),
               const SizedBox(height: 24),
               TextField(
                 controller: _note,
                 maxLines: 2,
-                style: GoogleFonts.hind(fontSize: 16),
+                style: TextStyle(fontSize: 16),
                 decoration: const InputDecoration(
                   labelText: 'नोट (वैकल्पिक)',
                   border: OutlineInputBorder(),
@@ -88,7 +87,7 @@ class _RateUserScreenState extends State<RateUserScreen> {
               Center(
                 child: TextButton(
                   onPressed: () => context.go('/'),
-                  child: Text('छोड़ें', style: GoogleFonts.hind(color: muted)),
+                  child: Text('छोड़ें', style: TextStyle(color: muted)),
                 ),
               ),
             ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const ink = Color(0xFF0F172A);
 const card = Color(0xFF1E293B);
@@ -22,9 +21,10 @@ ThemeData buildAdminTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: ink,
-    textTheme: GoogleFonts.hindTextTheme(
-      ThemeData(brightness: Brightness.dark).textTheme,
-    ).apply(bodyColor: const Color(0xFFE2E8F0), displayColor: Colors.white),
+    textTheme: ThemeData(brightness: Brightness.dark).textTheme.apply(
+      bodyColor: const Color(0xFFE2E8F0),
+      displayColor: Colors.white,
+    ),
     cardTheme: CardThemeData(
       color: card,
       elevation: 0,
@@ -34,7 +34,7 @@ ThemeData buildAdminTheme() {
       backgroundColor: card,
       foregroundColor: Colors.white,
       elevation: 0,
-      titleTextStyle: GoogleFonts.baloo2(
+      titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: Colors.white,
@@ -46,7 +46,7 @@ ThemeData buildAdminTheme() {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: GoogleFonts.baloo2(fontWeight: FontWeight.w700, fontSize: 15),
+        textStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -72,8 +72,8 @@ ThemeData buildAdminTheme() {
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: primary, width: 2),
       ),
-      labelStyle: GoogleFonts.hind(color: muted),
-      hintStyle: GoogleFonts.hind(color: muted),
+      labelStyle: TextStyle(color: muted),
+      hintStyle: TextStyle(color: muted),
     ),
     dividerColor: border,
   );

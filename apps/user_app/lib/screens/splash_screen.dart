@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../providers/auth_provider.dart';
 
@@ -75,11 +74,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
                 const SizedBox(height: 28),
                 Text('Rickbo',
-                    style: GoogleFonts.baloo2(
+                    style: TextStyle(
                       fontSize: 52, fontWeight: FontWeight.w800, color: blue)),
                 const SizedBox(height: 8),
                 Text('रिक्शा, बस एक टैप',
-                    style: GoogleFonts.hind(color: ink, fontSize: 16, fontWeight: FontWeight.w500)),
+                    style: TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 48),
                 const SizedBox(width: 32, height: 32,
                     child: CircularProgressIndicator(strokeWidth: 3, color: blue)),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rickbo_core/rickbo_core.dart';
@@ -32,8 +31,12 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
       ref.read(activeRideProvider.notifier).update((r) => r.copyWith(driverLat: lat, driverLng: lng));
     });
     _socket.on('ride:completed', (data) {
+      // Pass driverId forward so RateRideScreen can send a real complaint target.
+      final driverId = ref.read(activeRideProvider)?.driver?['id']?.toString() ?? '';
       ref.read(activeRideProvider.notifier).clear();
-      if (mounted) context.go('/booking/rate', extra: {'rideId': widget.rideId});
+      if (mounted) {
+        context.go('/booking/rate', extra: {'rideId': widget.rideId, 'driverId': driverId});
+      }
     });
   }
 
@@ -81,10 +84,10 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('${ride?.fromZone ?? '—'}  →  ${ride?.toZone ?? '—'}',
-                                  style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
                               const SizedBox(height: 2),
                               Text('किराया ₹${ride?.fare ?? 0} — ड्राइवर को नकद दें',
-                                  style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                                  style: TextStyle(color: muted, fontSize: 13)),
                             ],
                           ),
                         ),
@@ -92,7 +95,7 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(color: tintGreen, borderRadius: BorderRadius.circular(12)),
                           child: Text('ONGOING',
-                              style: GoogleFonts.hind(color: green, fontSize: 11, fontWeight: FontWeight.w700)),
+                              style: TextStyle(color: green, fontSize: 11, fontWeight: FontWeight.w700)),
                         ),
                       ],
                     ),
@@ -120,9 +123,9 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(ride?.driver?['name']?.toString() ?? 'ड्राइवर',
-                                  style: GoogleFonts.baloo2(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
                               Text('📞 ${ride?.driver?['phone']?.toString() ?? ''}',
-                                  style: GoogleFonts.hind(color: Colors.white70, fontSize: 13)),
+                                  style: TextStyle(color: Colors.white70, fontSize: 13)),
                             ],
                           ),
                         ),
@@ -138,7 +141,7 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                   _ShareRideCard(shareToken: ride?.shareToken),
                   const SizedBox(height: 16),
                   Text('पहुँचने पर ड्राइवर "सफ़र पूरा" बटन दबाएगा।',
-                      style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                      style: TextStyle(color: muted, fontSize: 13)),
                 ],
               ),
             ),
@@ -158,16 +161,16 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: red,
-        title: Text('मदद चाहिए?', style: GoogleFonts.baloo2(color: Colors.white, fontSize: 26)),
+        title: Text('मदद चाहिए?', style: TextStyle(color: Colors.white, fontSize: 26)),
         content: Text('3 सेकंड में SOS भेज दिया जाएगा',
-            style: GoogleFonts.hind(color: Colors.white, fontSize: 16)),
+            style: TextStyle(color: Colors.white, fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () {
               setState(() => _sosPressed = false);
               Navigator.pop(ctx);
             },
-            child: Text('रद्द करें', style: GoogleFonts.baloo2(color: Colors.white)),
+            child: Text('रद्द करें', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -255,12 +258,12 @@ class _ShareRideCardState extends State<_ShareRideCard> {
               const Icon(Icons.share_location, color: blue),
               const SizedBox(width: 8),
               Text('सफ़र शेयर करें',
-                  style: GoogleFonts.baloo2(color: blue, fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: blue, fontSize: 18, fontWeight: FontWeight.w800)),
             ],
           ),
           const SizedBox(height: 6),
           Text('परिवार को भेजें — वो लाइव देख सकते हैं',
-              style: GoogleFonts.hind(color: muted, fontSize: 13)),
+              style: TextStyle(color: muted, fontSize: 13)),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -268,7 +271,7 @@ class _ShareRideCardState extends State<_ShareRideCard> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(_url!, style: GoogleFonts.hind(fontSize: 12, color: ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text(_url!, style: TextStyle(fontSize: 12, color: ink), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
                 IconButton(
                   icon: const Icon(Icons.copy, size: 20, color: blue),
@@ -308,7 +311,7 @@ class _SosButton extends StatelessWidget {
         ),
         child: Center(
           child: Text('SOS',
-              style: GoogleFonts.baloo2(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
         ),
       ),
     );

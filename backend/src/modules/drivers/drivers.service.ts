@@ -90,6 +90,44 @@ export class DriversService {
         haversineKm(lat, lng, b.locationLat!, b.locationLng!),
       );
   }
+
+  // आज / हफ्ता / महीने का कमाई + सफ़र + औसत रेटिंग (सिर्फ user→driver ratings)
+  async getStats(driverId: string, period: 'today' | 'week' | 'month' = 'today') {
+    const now = new Date();
+    let since: Date;
+    if (period === 'today') {
+      since = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (period === 'week') {
+      since = new Date(now.getTime() - 7 * 86400000);
+    } else {
+      since = new Date(now.getTime() - 30 * 86400000);
+    }
+    const [rides, ratingAgg, totalRidesAgg] = await Promise.all([
+      this.prisma.ride.aggregate({
+        where: { driverId, status: 'COMPLETED', completedAt: { gte: since } },
+        _sum: { fare: true },
+        _count: { _all: true },
+      }),
+      this.prisma.rating.aggregate({
+        _avg: { stars: true },
+        where: {
+          ride: { driverId, completedAt: { gte: since } },
+          by: { not: driverId },
+        },
+      }),
+      this.prisma.ride.aggregate({
+        where: { driverId, status: 'COMPLETED' },
+        _count: { _all: true },
+      }),
+    ]);
+    return {
+      rides: rides._count._all ?? 0,
+      earnings: rides._sum.fare ?? 0,
+      ratingAvg: ratingAgg._avg.stars ?? 0,
+      totalRides: totalRidesAgg._count._all ?? 0,
+      period,
+    };
+  }
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {

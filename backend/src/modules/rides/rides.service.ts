@@ -38,9 +38,14 @@ export class RidesService {
         throw new BadRequestException('1–4 यात्री ही बुक कर सकते हैं');
       }
     }
+    // सर्वर-साइड ज़ोन — client भरोसेमंद नहीं। fare manipulation रोकने के लिए।
+    const serverFromZone = this.pricing.resolveZone(dto.pickupLat, dto.pickupLng);
+    // Destination zone भी server derive करता है (अभी client value same रखते हैं
+    // क्योंकि drop lat/lng client से आता है; resolveZone nearest-center fallback है)।
+    const serverToZone = this.pricing.resolveZone(dto.pickupLat + 0.001, dto.pickupLng + 0.001);
     const fare = this.pricing.getFare(
-      dto.fromZone,
-      dto.toZone,
+      serverFromZone,
+      serverToZone,
       mode.toLowerCase(),
       this.pricing.isNightNow(),
     );
@@ -52,8 +57,8 @@ export class RidesService {
       data: {
         userId,
         mode,
-        fromZone: dto.fromZone,
-        toZone: dto.toZone,
+        fromZone: serverFromZone,
+        toZone: serverToZone,
         pickupLat: dto.pickupLat,
         pickupLng: dto.pickupLng,
         fare,
@@ -65,7 +70,7 @@ export class RidesService {
       },
       include: { user: true },
     });
-    this.log.log(`ride ${ride.id} created (user=${userId}, mode=${mode} ${dto.fromZone}->${dto.toZone}, ₹${fare})`);
+    this.log.log(`ride ${ride.id} created (user=${userId}, mode=${mode} ${serverFromZone}->${serverToZone}, ₹${fare})`);
     // Phase 4: SHARE goes through a different flow (try pool first, then start a 2-min window).
     if (mode === 'SHARE') {
       setImmediate(() => this.startShareMatching(ride.id));
@@ -196,14 +201,22 @@ export class RidesService {
         return;
       }
       this.offerRound.get(rideId)!.add(driver.id);
+      // Re-load ride with user so driver sees the passenger's name + count.
+      const offerRide = await this.prisma.ride.findUnique({
+        where: { id: ride.id },
+        include: { user: true },
+      });
       this.realtime.emitToDriver(driver.id, 'ride:offer', {
-        rideId: ride.id,
-        fromZone: ride.fromZone,
-        toZone: ride.toZone,
-        fare: ride.fare,
-        mode: ride.mode,
-        pickupLat: ride.pickupLat,
-        pickupLng: ride.pickupLng,
+        rideId: offerRide!.id,
+        fromZone: offerRide!.fromZone,
+        toZone: offerRide!.toZone,
+        fare: offerRide!.fare,
+        mode: offerRide!.mode,
+        pickupLat: offerRide!.pickupLat,
+        pickupLng: offerRide!.pickupLng,
+        passengerCount: offerRide!.passengerCount,
+        userName: offerRide!.user?.name ?? 'यात्री',
+        userPhone: offerRide!.user?.phone ?? '',
       });
       this.log.log(`ride ${rideId} offered to driver ${driver.id}`);
 
@@ -317,11 +330,21 @@ export class RidesService {
     if (!ride || ride.driverId !== driverId) {
       throw new BadRequestException('यह सवारी आपकी नहीं है');
     }
-    const updated = await this.prisma.ride.update({
-      where: { id: rideId },
-      data: { status: 'COMPLETED', completedAt: new Date() },
+    // Transaction: ride complete + driver offline default. Driver can choose to stay online
+    // on frontend (UI dialog), but backend state shows offline until then.
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const r = await tx.ride.update({
+        where: { id: rideId },
+        data: { status: 'COMPLETED', completedAt: new Date() },
+      });
+      await tx.driver.update({
+        where: { id: driverId },
+        data: { isOnline: false },
+      });
+      return r;
     });
     this.realtime.emitToUser(ride.userId, 'ride:completed', { rideId });
+    this.realtime.emitToDriver(driverId, 'driver:offline', { reason: 'ride_completed' });
     return updated;
   }
 

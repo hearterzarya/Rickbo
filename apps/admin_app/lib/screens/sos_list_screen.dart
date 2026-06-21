@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../theme.dart';
@@ -45,7 +44,7 @@ class _SosListScreenState extends ConsumerState<SosListScreen> {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('SOS load नहीं हुई: $e', style: GoogleFonts.hind(color: danger)),
+            child: Text('SOS load नहीं हुई: $e', style: TextStyle(color: danger)),
           ),
         ),
         data: (items) {
@@ -58,7 +57,7 @@ class _SosListScreenState extends ConsumerState<SosListScreen> {
                   children: [
                     Icon(Icons.shield, color: success, size: 64),
                     const SizedBox(height: 12),
-                    Text('कोई SOS नहीं', style: GoogleFonts.baloo2(color: Colors.white, fontSize: 18)),
+                    Text('कोई SOS नहीं', style: TextStyle(color: Colors.white, fontSize: 18)),
                   ],
                 ),
               ),
@@ -87,7 +86,7 @@ class _SosListScreenState extends ConsumerState<SosListScreen> {
                   ),
                   title: Text(
                     'SOS — ${raisedBy.toLowerCase()}',
-                    style: GoogleFonts.baloo2(
+                    style: TextStyle(
                       color: resolved ? muted : Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
@@ -99,7 +98,7 @@ class _SosListScreenState extends ConsumerState<SosListScreen> {
                       '🛺 ${driver?['phone'] ?? 'no driver'}\n'
                       '📍 ${_fmtNum(s['lat'])}, ${_fmtNum(s['lng'])}\n'
                       '${_fmtTime(s['createdAt']?.toString())}',
-                      style: GoogleFonts.hind(color: muted, fontSize: 12, height: 1.3),
+                      style: TextStyle(color: muted, fontSize: 12, height: 1.3),
                     ),
                   ),
                   isThreeLine: true,
@@ -123,7 +122,7 @@ class _SosListScreenState extends ConsumerState<SosListScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, top: 4),
       child: FilterChip(
-        label: Text(label, style: GoogleFonts.hind(fontSize: 12, color: selected ? Colors.white : muted)),
+        label: Text(label, style: TextStyle(fontSize: 12, color: selected ? Colors.white : muted)),
         selected: selected,
         onSelected: (_) => setState(() => _resolved = val),
         backgroundColor: card2,
@@ -180,10 +179,10 @@ class _NotesDialogState extends State<_NotesDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: card,
-      title: Text('Resolve SOS', style: GoogleFonts.baloo2(color: Colors.white)),
+      title: Text('Resolve SOS', style: TextStyle(color: Colors.white)),
       content: TextField(
         controller: _ctrl,
-        style: GoogleFonts.hind(color: Colors.white),
+        style: TextStyle(color: Colors.white),
         maxLines: 3,
         decoration: const InputDecoration(hintText: 'Notes (optional)'),
       ),

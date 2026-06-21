@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 class RideFinishScreen extends StatefulWidget {
@@ -31,16 +30,16 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           backgroundColor: green,
-          title: Text('सफ़र पूरा! 🎉', style: GoogleFonts.baloo2(color: Colors.white)),
+          title: Text('सफ़र पूरा! 🎉', style: TextStyle(color: Colors.white)),
           content: Text('₹${widget.fare} नकद मिल गए।\nसवारी को रेट करें — 5 सैकंड।',
-              style: GoogleFonts.hind(color: Colors.white)),
+              style: TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 context.go('/ride/rate', extra: {'rideId': widget.rideId});
               },
-              child: Text('ठीक है', style: GoogleFonts.baloo2(color: Colors.white)),
+              child: Text('ठीक है', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -57,16 +56,16 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: red,
-        title: Text('मदद चाहिए?', style: GoogleFonts.baloo2(color: Colors.white, fontSize: 26)),
+        title: Text('मदद चाहिए?', style: TextStyle(color: Colors.white, fontSize: 26)),
         content: Text('3 सेकंड में SOS भेज दिया जाएगा',
-            style: GoogleFonts.hind(color: Colors.white, fontSize: 16)),
+            style: TextStyle(color: Colors.white, fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () {
               setState(() => _sosPressed = false);
               Navigator.pop(ctx);
             },
-            child: Text('रद्द करें', style: GoogleFonts.baloo2(color: Colors.white)),
+            child: Text('रद्द करें', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -117,9 +116,9 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
                     child: const Icon(Icons.check, color: Colors.white, size: 80),
                   ),
                   const SizedBox(height: 28),
-                  Text(widget.toZone, style: GoogleFonts.baloo2(fontSize: 26, fontWeight: FontWeight.w800, color: ink)),
+                  Text(widget.toZone, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: ink)),
                   const SizedBox(height: 6),
-                  Text('गंतव्य पर पहुँच गए', style: GoogleFonts.hind(color: muted, fontSize: 16)),
+                  Text('गंतव्य पर पहुँच गए', style: TextStyle(color: muted, fontSize: 16)),
                   const SizedBox(height: 36),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -131,8 +130,8 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('नकद किराया', style: GoogleFonts.hind(color: muted, fontSize: 15)),
-                        Text('₹${widget.fare}', style: GoogleFonts.baloo2(fontSize: 36, fontWeight: FontWeight.w800, color: green)),
+                        Text('नकद किराया', style: TextStyle(color: muted, fontSize: 15)),
+                        Text('₹${widget.fare}', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: green)),
                       ],
                     ),
                   ),
@@ -160,7 +159,7 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
                   ),
                   child: Center(
                     child: Text('SOS',
-                        style: GoogleFonts.baloo2(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ),

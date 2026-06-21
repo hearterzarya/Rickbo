@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/ride_provider.dart';
 
@@ -60,9 +59,9 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('🛺 रिक्शा आ गई!', style: GoogleFonts.baloo2()),
+        title: Text('🛺 रिक्शा आ गई!', style: TextStyle()),
         content: Text('ड्राइवर को OTP बताएँ: ${ref.read(activeRideProvider)?.otp ?? ''}',
-            style: GoogleFonts.hind(fontSize: 18)),
+            style: TextStyle(fontSize: 18)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ठीक है')),
         ],
@@ -125,17 +124,17 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(driver?['name']?.toString() ?? 'ड्राइवर',
-                                      style: GoogleFonts.baloo2(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                                   const SizedBox(height: 2),
                                   Row(children: [
                                     const Icon(Icons.star, color: Color(0xFFFFD700), size: 16),
                                     const SizedBox(width: 4),
                                     Text('${driver?['ratingAvg'] ?? '4.8'}',
-                                        style: GoogleFonts.hind(color: Colors.white, fontSize: 14)),
+                                        style: TextStyle(color: Colors.white, fontSize: 14)),
                                   ]),
                                   const SizedBox(height: 4),
                                   Text('📞 ${driver?['phone']?.toString() ?? ''}',
-                                      style: GoogleFonts.hind(color: Colors.white70, fontSize: 13)),
+                                      style: TextStyle(color: Colors.white70, fontSize: 13)),
                                 ],
                               ),
                             ),
@@ -150,7 +149,7 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                           ),
                           child: Text(
                             (driver?['rickshawNumber']?.toString() ?? 'रिक्शा नंबर').toUpperCase(),
-                            style: GoogleFonts.baloo2(color: blue, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: 2),
+                            style: TextStyle(color: blue, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: 2),
                           ),
                         ),
                       ],
@@ -164,7 +163,7 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('OTP (ड्राइवर को बताएँ जब रिक्शा पहुँचे)',
-                            style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                            style: TextStyle(color: muted, fontSize: 13)),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -179,7 +178,7 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                               ),
                               child: Center(
                                 child: Text(digit,
-                                    style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: blue)),
+                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: blue)),
                               ),
                             );
                           }),
@@ -195,15 +194,15 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Column(children: [
-                          Text('₹${ride?.fare ?? 0}', style: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
-                          Text('पक्का किराया', style: GoogleFonts.hind(fontSize: 11, color: muted)),
+                          Text('₹${ride?.fare ?? 0}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
+                          Text('पक्का किराया', style: TextStyle(fontSize: 11, color: muted)),
                         ]),
                         Container(width: 1, height: 30, color: line),
                         Column(children: [
                           const Icon(Icons.location_on, color: cyan, size: 28),
                           const SizedBox(height: 4),
-                          Text(ride?.toZone ?? '—', style: GoogleFonts.hind(fontSize: 13, fontWeight: FontWeight.w700)),
-                          Text('गंतव्य', style: GoogleFonts.hind(fontSize: 11, color: muted)),
+                          Text(ride?.toZone ?? '—', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('गंतव्य', style: TextStyle(fontSize: 11, color: muted)),
                         ]),
                       ],
                     ),
@@ -215,7 +214,7 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                       onPressed: () => _showShareDialog(),
                       icon: const Icon(Icons.share, color: blue),
                       label: Text('सफ़र शेयर करें',
-                          style: GoogleFonts.baloo2(color: blue, fontSize: 16, fontWeight: FontWeight.w700)),
+                          style: TextStyle(color: blue, fontSize: 16, fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: blue, width: 1.5),
                         minimumSize: const Size.fromHeight(56),
@@ -237,9 +236,9 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('सफ़र शेयर लिंक', style: GoogleFonts.baloo2()),
+        title: Text('सफ़र शेयर लिंक', style: TextStyle()),
         content: Text('rickbo://ride/${widget.rideId}\n\n(Phase 3 में web पर लाइव ट्रैकिंग लिंक बनेगा)',
-            style: GoogleFonts.hind()),
+            style: TextStyle()),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ठीक है'))],
       ),
     );

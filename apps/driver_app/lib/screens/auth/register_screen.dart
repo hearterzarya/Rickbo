@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/auth_provider.dart';
 
@@ -58,15 +57,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              Text('अपनी जानकारी', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+              Text('अपनी जानकारी', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 8),
               Text('ताकि यात्री आपको पहचान सकें',
-                  style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                  style: TextStyle(color: muted, fontSize: 14)),
               const SizedBox(height: 28),
               TextField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
-                style: GoogleFonts.hind(fontSize: 18),
+                style: TextStyle(fontSize: 18),
                 decoration: const InputDecoration(
                   labelText: 'आपका नाम',
                   border: OutlineInputBorder(),
@@ -76,7 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               TextField(
                 controller: _rickshawCtrl,
                 textCapitalization: TextCapitalization.characters,
-                style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: 3),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: 3),
                 decoration: const InputDecoration(
                   labelText: 'रिक्शा नंबर (UP16 XX XXXX)',
                   border: OutlineInputBorder(),

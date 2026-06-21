@@ -58,7 +58,8 @@ export class SafetyService {
     if (ride.userId === data.by && ride.driverId) {
       const agg = await this.prisma.rating.aggregate({
         _avg: { stars: true },
-        where: { ride: { driverId: ride.driverId } },
+        // केवल यात्री → ड्राइवर रेटिंग (driver→user ratings exclude करो)
+        where: { ride: { driverId: ride.driverId }, by: { not: ride.driverId } },
       });
       await this.prisma.driver.update({
         where: { id: ride.driverId },

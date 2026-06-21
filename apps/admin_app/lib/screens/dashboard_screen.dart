@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../providers/auth_provider.dart';
 import '../theme.dart';
@@ -74,7 +73,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 20),
             Text('Operations',
-                style: GoogleFonts.baloo2(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             _NavTile(icon: Icons.people, label: 'Users', sub: 'सभी यात्री', onTap: () => context.push('/users')),
             _NavTile(icon: Icons.electric_rickshaw, label: 'Drivers', sub: 'Active, suspended, banned', onTap: () => context.push('/drivers')),
@@ -151,9 +150,9 @@ class _StatCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(label, style: GoogleFonts.hind(color: muted, fontSize: 12)),
-                  Text(value, style: GoogleFonts.baloo2(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-                  if (sub != null) Text(sub!, style: GoogleFonts.hind(color: muted, fontSize: 11)),
+                  Text(label, style: TextStyle(color: muted, fontSize: 12)),
+                  Text(value, style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                  if (sub != null) Text(sub!, style: TextStyle(color: muted, fontSize: 11)),
                 ],
               ),
             ),
@@ -180,8 +179,8 @@ class _NavTile extends StatelessWidget {
           decoration: BoxDecoration(color: primary.withValues(alpha: 0.2), shape: BoxShape.circle),
           child: Icon(icon, color: primary, size: 22),
         ),
-        title: Text(label, style: GoogleFonts.baloo2(color: Colors.white, fontWeight: FontWeight.w700)),
-        subtitle: Text(sub, style: GoogleFonts.hind(color: muted, fontSize: 12)),
+        title: Text(label, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        subtitle: Text(sub, style: TextStyle(color: muted, fontSize: 12)),
         trailing: const Icon(Icons.chevron_right, color: muted),
         onTap: onTap,
       ),
@@ -197,7 +196,7 @@ class _ErrorBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: danger.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-      child: Text(message, style: GoogleFonts.hind(color: danger, fontSize: 13)),
+      child: Text(message, style: TextStyle(color: danger, fontSize: 13)),
     );
   }
 }

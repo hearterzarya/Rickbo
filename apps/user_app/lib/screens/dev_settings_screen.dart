@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 /// Allows changing the API base URL at runtime.
@@ -106,18 +105,18 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Current URL:', style: GoogleFonts.hind(color: muted, fontSize: 13)),
+            Text('Current URL:', style: TextStyle(color: muted, fontSize: 13)),
             const SizedBox(height: 4),
             Text(
               _current,
-              style: GoogleFonts.hind(fontSize: 14, fontWeight: FontWeight.w600, color: blue),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: blue),
             ),
             if (_isLive)
               Container(
                 margin: const EdgeInsets.only(top: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: green.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                child: Text('☁️  Live (Railway)', style: GoogleFonts.hind(color: green, fontSize: 12, fontWeight: FontWeight.w600)),
+                child: Text('☁️  Live (Railway)', style: TextStyle(color: green, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             const SizedBox(height: 28),
             TextField(
@@ -140,12 +139,12 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
             const SizedBox(height: 32),
             const Divider(),
             const SizedBox(height: 12),
-            Text('Quick Test Login', style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w700, color: blue)),
+            Text('Quick Test Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: blue)),
             const SizedBox(height: 4),
             Text(
               'Sends a dev OTP to the live backend so you can log in without Firebase.\n'
               'OTP appears in the response — use it on the OTP screen.',
-              style: GoogleFonts.hind(color: muted, fontSize: 13, height: 1.4),
+              style: TextStyle(color: muted, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
@@ -167,7 +166,7 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
                         const Icon(Icons.vpn_key, color: green, size: 18),
                         const SizedBox(width: 6),
                         Text('OTP: ${_testOtp!['devOtp']}',
-                            style: GoogleFonts.baloo2(color: green, fontSize: 22, fontWeight: FontWeight.w800)),
+                            style: TextStyle(color: green, fontSize: 22, fontWeight: FontWeight.w800)),
                         const Spacer(),
                         IconButton(
                           icon: const Icon(Icons.copy, size: 18, color: green),
@@ -195,8 +194,8 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Row(
           children: [
-            Text('$label: ', style: GoogleFonts.hind(color: muted, fontSize: 13)),
-            Text(url, style: GoogleFonts.hind(color: blue, fontSize: 13)),
+            Text('$label: ', style: TextStyle(color: muted, fontSize: 13)),
+            Text(url, style: TextStyle(color: blue, fontSize: 13)),
           ],
         ),
       );

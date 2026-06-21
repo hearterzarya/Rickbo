@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/auth_provider.dart';
@@ -63,8 +62,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('ध्यान दें', style: GoogleFonts.baloo2()),
-        content: Text(msg, style: GoogleFonts.hind(fontSize: 16)),
+        title: Text('ध्यान दें', style: TextStyle()),
+        content: Text(msg, style: TextStyle(fontSize: 16)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('ठीक है')),
         ],
@@ -85,18 +84,18 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             Text('OTP आया?', style: Theme.of(context).textTheme.displayMedium),
             const SizedBox(height: 8),
             Text('${widget.phone} पर 6 अंकों का OTP भेजा गया',
-                style: GoogleFonts.hind(fontSize: 15, color: muted)),
+                style: TextStyle(fontSize: 15, color: muted)),
             const SizedBox(height: 40),
             TextField(
               controller: _ctrl,
               keyboardType: TextInputType.number,
               maxLength: 6,
               textAlign: TextAlign.center,
-              style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 12),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 12),
               decoration: InputDecoration(
                 counterText: '',
                 hintText: '● ● ● ● ● ●',
-                hintStyle: GoogleFonts.hind(color: line, fontSize: 22, letterSpacing: 8),
+                hintStyle: TextStyle(color: line, fontSize: 22, letterSpacing: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -106,7 +105,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                   onPressed: _autoFill,
                   child: Text(
                     '🪄 डेव OTP भरें (${widget.devOtp})',
-                    style: GoogleFonts.hind(color: cyan, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: cyan, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -119,7 +118,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               child: TextButton(
                 onPressed: () => context.pop(),
                 child: Text('नंबर बदलें / दोबारा OTP भेजें',
-                    style: GoogleFonts.hind(color: blue, fontSize: 14)),
+                    style: TextStyle(color: blue, fontSize: 14)),
               ),
             ),
           ],

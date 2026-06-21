@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../providers/auth_provider.dart';
@@ -117,11 +116,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (token == null) return;
       final s = ref.read(socketProvider);
       await s.connect(baseUrl: base, token: token);
-      // Join the ride room on the server. (Server emits events to user room
-      // automatically, but we also want the user to receive driver:location
-      // updates via the ride room.)
+      // Join the ride room on the server. Backend handler ride:join (Phase 1.A)
+      // subscribes this socket to ride:${rideId} so it receives driver:location.
       Future.delayed(const Duration(milliseconds: 300), () {
-        s.emit('join', {'rideId': rideId});
+        s.emit('ride:join', {'rideId': rideId});
       });
     });
   }
@@ -149,9 +147,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('कहाँ जाना है?', style: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
+              Text('कहाँ जाना है?', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 4),
-              Text('एक जगह चुनें', style: GoogleFonts.hind(color: muted, fontSize: 14)),
+              Text('एक जगह चुनें', style: TextStyle(color: muted, fontSize: 14)),
               const SizedBox(height: 20),
               ..._zones.map((z) => InkWell(
                     borderRadius: BorderRadius.circular(16),
@@ -173,11 +171,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             width: 44, height: 44,
                             decoration: BoxDecoration(color: tintBlue, borderRadius: BorderRadius.circular(12)),
                             child: Center(child: Text(z['id'] as String,
-                                style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w800, color: blue))),
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: blue))),
                           ),
                           const SizedBox(width: 14),
                           Expanded(child: Text(z['name'] as String,
-                              style: GoogleFonts.hind(fontSize: 16, fontWeight: FontWeight.w600, color: ink))),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: ink))),
                           const Icon(Icons.chevron_right, color: muted),
                         ],
                       ),
@@ -222,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(fromName, style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                Text(fromName, style: TextStyle(color: muted, fontSize: 14)),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -234,7 +232,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(toName, style: GoogleFonts.hind(color: ink, fontSize: 18, fontWeight: FontWeight.w700)),
+                Text(toName, style: TextStyle(color: ink, fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 24),
                 // Phase 4: RESERVE vs SHARE mode toggle
                 Row(
@@ -286,15 +284,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(mode == 'share' ? 'साझा सवारी — प्रति सवारी' : 'पूरी रिक्शा',
-                                style: GoogleFonts.hind(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
+                                style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
                             Text('₹$fare पक्का किराया',
-                                style: GoogleFonts.baloo2(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
                             if (isNight)
                               Text('रात का +₹5 जुड़ा है',
-                                  style: GoogleFonts.hind(color: const Color(0xFFFFE4A0), fontSize: 12)),
+                                  style: TextStyle(color: const Color(0xFFFFE4A0), fontSize: 12)),
                             if (mode == 'share')
                               Text('अगर कोई न मिले तो "अकेले ₹25" चुनें',
-                                  style: GoogleFonts.hind(color: const Color(0xFFFFE4A0), fontSize: 12)),
+                                  style: TextStyle(color: const Color(0xFFFFE4A0), fontSize: 12)),
                           ],
                         ),
                       ),
@@ -305,19 +303,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 if (mode == 'reserve')
                   Row(
                     children: [
-                      Text('यात्री:', style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                      Text('यात्री:', style: TextStyle(color: muted, fontSize: 14)),
                       const SizedBox(width: 12),
                       IconButton(
                         onPressed: pax > 1 ? () => setSheet(() => pax--) : null,
                         icon: const Icon(Icons.remove_circle_outline, color: blue),
                       ),
-                      Text('$pax', style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
+                      Text('$pax', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
                       IconButton(
                         onPressed: pax < 4 ? () => setSheet(() => pax++) : null,
                         icon: const Icon(Icons.add_circle, color: blue),
                       ),
                       const Spacer(),
-                      Text('(1–4)', style: GoogleFonts.hind(color: muted, fontSize: 12)),
+                      Text('(1–4)', style: TextStyle(color: muted, fontSize: 12)),
                     ],
                   )
                 else
@@ -335,7 +333,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Expanded(
                           child: Text(
                             '2 मिनट इंतज़ार करेंगे। कोई और सवारी मिले तो ₹$fare देने होंगे। नहीं मिले तो "अकेले ₹25" चुन सकते हैं।',
-                            style: GoogleFonts.hind(color: ink, fontSize: 13),
+                            style: TextStyle(color: ink, fontSize: 13),
                           ),
                         ),
                       ],
@@ -350,7 +348,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.pop(ctx, null),
-                    child: Text('रद्द करें', style: GoogleFonts.hind(color: muted)),
+                    child: Text('रद्द करें', style: TextStyle(color: muted)),
                   ),
                 ),
               ],
@@ -370,7 +368,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rickbo', style: GoogleFonts.baloo2(fontWeight: FontWeight.w800, color: blue)),
+        title: Text('Rickbo', style: TextStyle(fontWeight: FontWeight.w800, color: blue)),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -396,14 +394,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 16),
               Text('नमस्ते! 👋', style: Theme.of(context).textTheme.displayLarge),
               const SizedBox(height: 4),
-              Text('कहाँ चलें?', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+              Text('कहाँ चलें?', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 24),
               _Hero(onTap: _loading ? null : _book, loading: _loading),
               const SizedBox(height: 16),
               const _TrustStrip(),
               const SizedBox(height: 24),
               Text('जल्दी जाने की जगहें',
-                  style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w700, color: ink)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: ink)),
               const SizedBox(height: 12),
               const _QuickChips(),
               const SizedBox(height: 24),
@@ -449,10 +447,10 @@ class _Hero extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('🛺  रिक्शा बुलाओ',
-                    style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
                 const SizedBox(height: 6),
                 Text('पक्का किराया • सुरक्षित सफ़र',
-                    style: GoogleFonts.hind(color: Colors.white70, fontSize: 14)),
+                    style: TextStyle(color: Colors.white70, fontSize: 14)),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -463,7 +461,7 @@ class _Hero extends StatelessWidget {
                   child: loading
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : Text(loading ? 'रुकें...' : 'अभी बुक करो  →',
-                          style: GoogleFonts.baloo2(color: blue, fontSize: 14, fontWeight: FontWeight.w800)),
+                          style: TextStyle(color: blue, fontSize: 14, fontWeight: FontWeight.w800)),
                 ),
               ],
             ),
@@ -505,7 +503,7 @@ class _Pill extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: ink),
           const SizedBox(width: 6),
-          Text(label, style: GoogleFonts.hind(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
         ],
       ),
     );
@@ -541,7 +539,7 @@ class _QuickChips extends StatelessWidget {
                       child: Icon(m['icon'] as IconData, color: blue, size: 20),
                     ),
                     const SizedBox(height: 6),
-                    Text(m['label'] as String, style: GoogleFonts.hind(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                    Text(m['label'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
                   ],
                 ),
               ))
@@ -564,7 +562,7 @@ class _DebugCard extends StatelessWidget {
             child: Text(
               'Dev Mode: कोई भी 10 अंकों का नंबर डालें — backend 6 अंकों का OTP देगा। '
               'OTP स्क्रीन पर "🪄 डेव OTP भरें" से ऑटो-फिल।',
-              style: GoogleFonts.hind(fontSize: 12, color: ink),
+              style: TextStyle(fontSize: 12, color: ink),
             ),
           ),
         ],
@@ -609,11 +607,11 @@ class _ModeChip extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: GoogleFonts.baloo2(
+                      style: TextStyle(
                           fontWeight: FontWeight.w700, fontSize: 14,
                           color: selected ? Colors.white : ink)),
                   Text(subtitle,
-                      style: GoogleFonts.hind(
+                      style: TextStyle(
                           fontSize: 11,
                           color: selected ? Colors.white70 : muted)),
                 ],

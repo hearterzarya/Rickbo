@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtPayload } from '../auth/jwt.strategy';
@@ -47,6 +47,17 @@ export class DriversController {
   @Post('me/offline')
   goOffline(@Request() req: { user: JwtPayload }) {
     return this.drivers.setOnline(req.user.sub, false);
+  }
+
+  // ड्राइवर के लिए आज/हफ्ता/महीने का कमाई + सफ़र + औसत रेटिंग।
+  @UseGuards(JwtAuthGuard)
+  @Get('me/stats')
+  getStats(
+    @Request() req: { user: JwtPayload },
+    @Query('period') period?: string,
+  ) {
+    const p = (period === 'week' || period === 'month') ? period : 'today';
+    return this.drivers.getStats(req.user.sub, p as 'today' | 'week' | 'month');
   }
 
   // Phase 4: extend a driver's subscription (dev/admin convenience; in production

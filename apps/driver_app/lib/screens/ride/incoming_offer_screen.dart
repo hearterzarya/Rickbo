@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/auth_provider.dart';
 
@@ -134,7 +133,7 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(20)),
                     child: Text('नई सवारी',
-                        style: GoogleFonts.baloo2(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -143,7 +142,7 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                       const Icon(Icons.timer, color: blue, size: 18),
                       const SizedBox(width: 4),
                       Text('$_secs sec',
-                          style: GoogleFonts.baloo2(color: blue, fontWeight: FontWeight.w800)),
+                          style: TextStyle(color: blue, fontWeight: FontWeight.w800)),
                     ]),
                   ),
                 ],
@@ -175,11 +174,11 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                       ),
                       child: Center(
                         child: Text('₹${widget.fare}',
-                            style: GoogleFonts.baloo2(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                            style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text('पक्का किराया', style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                    Text('पक्का किराया', style: TextStyle(color: muted, fontSize: 13)),
                     const SizedBox(height: 22),
                     _RouteRow(from: widget.fromZone, to: widget.toZone),
                     const SizedBox(height: 22),
@@ -202,9 +201,9 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('पिकअप', style: GoogleFonts.hind(color: muted, fontSize: 12)),
+                                Text('पिकअप', style: TextStyle(color: muted, fontSize: 12)),
                                 Text('${widget.pickupLat.toStringAsFixed(4)}, ${widget.pickupLng.toStringAsFixed(4)}',
-                                    style: GoogleFonts.baloo2(color: blue, fontSize: 14, fontWeight: FontWeight.w700)),
+                                    style: TextStyle(color: blue, fontSize: 14, fontWeight: FontWeight.w700)),
                               ],
                             ),
                           ),
@@ -231,7 +230,7 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                             children: [
                               const Icon(Icons.close, color: Colors.white, size: 28),
                               const SizedBox(width: 8),
-                              Text('ना', style: GoogleFonts.baloo2(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+                              Text('ना', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
                             ],
                           ),
                         ),
@@ -256,7 +255,7 @@ class _IncomingOfferScreenState extends ConsumerState<IncomingOfferScreen> {
                             children: [
                               const Icon(Icons.check, color: Colors.white, size: 32),
                               const SizedBox(width: 8),
-                              Text('हाँ, सवारी लो', style: GoogleFonts.baloo2(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                              Text('हाँ, सवारी लो', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                             ],
                           ),
                         ),
@@ -287,7 +286,7 @@ class _RouteRow extends StatelessWidget {
           Row(children: [
             const Icon(Icons.circle, color: green, size: 14),
             const SizedBox(width: 10),
-            Expanded(child: Text(from, style: GoogleFonts.hind(color: ink, fontSize: 16, fontWeight: FontWeight.w700))),
+            Expanded(child: Text(from, style: TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w700))),
           ]),
           const SizedBox(height: 8),
           Padding(
@@ -297,7 +296,7 @@ class _RouteRow extends StatelessWidget {
           Row(children: [
             const Icon(Icons.location_on, color: red, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(to, style: GoogleFonts.hind(color: ink, fontSize: 16, fontWeight: FontWeight.w700))),
+            Expanded(child: Text(to, style: TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w700))),
           ]),
         ],
       ),
@@ -323,10 +322,10 @@ class _StatPill extends StatelessWidget {
             Row(children: [
               Icon(icon, size: 14, color: muted),
               const SizedBox(width: 4),
-              Text(label, style: GoogleFonts.hind(color: muted, fontSize: 12)),
+              Text(label, style: TextStyle(color: muted, fontSize: 12)),
             ]),
             const SizedBox(height: 4),
-            Text(value, style: GoogleFonts.baloo2(fontSize: 16, fontWeight: FontWeight.w800, color: ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink), maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

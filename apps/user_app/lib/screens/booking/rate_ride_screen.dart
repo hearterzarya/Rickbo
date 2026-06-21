@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 class RateRideScreen extends StatefulWidget {
   final String rideId;
-  const RateRideScreen({super.key, required this.rideId});
+  final String driverId;
+  const RateRideScreen({super.key, required this.rideId, this.driverId = ''});
 
   @override
   State<RateRideScreen> createState() => _RateRideScreenState();
@@ -64,13 +64,13 @@ class _RateRideScreenState extends State<RateRideScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('शिकायत दर्ज करें', style: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
+                Text('शिकायत दर्ज करें', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
                 const SizedBox(height: 8),
                 Text('ड्राइवर की आईडी इस सफ़र से जुड़ी है — आपकी शिकायत सीधे कंट्रोल रूम को जाएगी।',
-                    style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                    style: TextStyle(color: muted, fontSize: 13)),
                 const SizedBox(height: 16),
                 ...reasons.map((r) => RadioListTile<String>(
-                      title: Text(r, style: GoogleFonts.hind(fontSize: 16)),
+                      title: Text(r, style: TextStyle(fontSize: 16)),
                       value: r,
                       groupValue: selected,
                       onChanged: (v) => setSheet(() => selected = v ?? selected),
@@ -79,7 +79,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
                 TextField(
                   controller: reasonCtrl,
                   maxLines: 3,
-                  style: GoogleFonts.hind(fontSize: 15),
+                  style: TextStyle(fontSize: 15),
                   decoration: const InputDecoration(
                     labelText: 'और कुछ कहना है? (वैकल्पिक)',
                     border: OutlineInputBorder(),
@@ -98,7 +98,11 @@ class _RateRideScreenState extends State<RateRideScreen> {
                       try {
                         await RickboApi().raiseComplaint(
                           rideId: widget.rideId,
-                          against: widget.rideId, // will be replaced with real driverId in Phase 5
+                          // Real driverId from previous screen (passed via router extra) —
+                          // backend uses it to count + auto-suspend repeat offenders.
+                          // If empty (Phase 2 fallback), backend still stores the complaint
+                          // but auto-suspend logic won't match.
+                          against: widget.driverId.isNotEmpty ? widget.driverId : widget.rideId,
                           reason: selected + (reasonCtrl.text.trim().isNotEmpty ? ' — ${reasonCtrl.text.trim()}' : ''),
                           severity: 2,
                         );
@@ -135,7 +139,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text('सफ़र कैसा रहा?', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+              Text('सफ़र कैसा रहा?', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -149,12 +153,12 @@ class _RateRideScreenState extends State<RateRideScreen> {
                 )),
               ),
               const SizedBox(height: 8),
-              Center(child: Text('${_stars}/5', style: GoogleFonts.baloo2(color: muted, fontSize: 18, fontWeight: FontWeight.w700))),
+              Center(child: Text('${_stars}/5', style: TextStyle(color: muted, fontSize: 18, fontWeight: FontWeight.w700))),
               const SizedBox(height: 24),
               TextField(
                 controller: _commentCtrl,
                 maxLines: 3,
-                style: GoogleFonts.hind(fontSize: 16),
+                style: TextStyle(fontSize: 16),
                 decoration: const InputDecoration(
                   labelText: 'कुछ कहना है? (वैकल्पिक)',
                   border: OutlineInputBorder(),
@@ -168,7 +172,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
               Center(
                 child: TextButton(
                   onPressed: () => context.go('/'),
-                  child: Text('अभी नहीं', style: GoogleFonts.hind(color: muted)),
+                  child: Text('अभी नहीं', style: TextStyle(color: muted)),
                 ),
               ),
               const SizedBox(height: 4),
@@ -176,7 +180,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
                 child: TextButton.icon(
                   onPressed: _openComplaintSheet,
                   icon: const Icon(Icons.report_problem_outlined, color: red, size: 18),
-                  label: Text('शिकायत दर्ज करें', style: GoogleFonts.hind(color: red, fontWeight: FontWeight.w700)),
+                  label: Text('शिकायत दर्ज करें', style: TextStyle(color: red, fontWeight: FontWeight.w700)),
                 ),
               ),
             ],

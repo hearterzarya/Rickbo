@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../theme.dart';
 
@@ -26,7 +25,7 @@ class ZonesScreen extends ConsumerWidget {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('Zones load नहीं हुई: $e', style: GoogleFonts.hind(color: danger)),
+            child: Text('Zones load नहीं हुई: $e', style: TextStyle(color: danger)),
           ),
         ),
         data: (list) => ListView.separated(
@@ -45,7 +44,7 @@ class ZonesScreen extends ConsumerWidget {
                       decoration: BoxDecoration(color: primary.withValues(alpha: 0.2), shape: BoxShape.circle),
                       child: Center(
                         child: Text(z['id'].toString(),
-                            style: GoogleFonts.baloo2(color: primary, fontSize: 18, fontWeight: FontWeight.w800)),
+                            style: TextStyle(color: primary, fontSize: 18, fontWeight: FontWeight.w800)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -54,11 +53,11 @@ class ZonesScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(z['name']?.toString() ?? '',
-                              style: GoogleFonts.baloo2(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 2),
                           Text(
                             '📍 ${z['lat']}, ${z['lng']}\nRadius: ${z['radius']}m',
-                            style: GoogleFonts.hind(color: muted, fontSize: 12, height: 1.4),
+                            style: TextStyle(color: muted, fontSize: 12, height: 1.4),
                           ),
                         ],
                       ),

@@ -78,6 +78,20 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     });
   }
 
+  // User joins the ride room so they receive driver:location + ride:status events.
+  // Without this, the user's socket is in `user:${id}` only — it never sees ride-scoped events.
+  @SubscribeMessage('ride:join')
+  joinRideEvt(
+    @MessageBody() body: { rideId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    if (!body?.rideId) return;
+    client.join(`ride:${body.rideId}`);
+    this.server.to(`ride:${body.rideId}`).emit('ride:joined', { rideId: body.rideId });
+    // eslint-disable-next-line no-console
+    console.log(`[ws] ${client.id} joined ride:${body.rideId}`);
+  }
+
   // ---- Helpers used by other services (rides / matching / safety) ----
   emitToDriver(driverId: string, event: string, data: any) {
     this.server.to(`driver:${driverId}`).emit(event, data);

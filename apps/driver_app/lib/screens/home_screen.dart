@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../providers/auth_provider.dart';
@@ -20,11 +19,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Position? _pos;
   Timer? _locTimer;
   String? _locationError;
+  Map<String, dynamic>? _stats;
+  Timer? _statsTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
 
   @override
   void dispose() {
     _locTimer?.cancel();
+    _statsTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final s = await RickboApi().getDriverStats(period: 'today');
+      if (mounted) setState(() => _stats = s);
+    } catch (_) {}
+    // Refresh stats every 30s so the count grows as rides complete.
+    _statsTimer?.cancel();
+    _statsTimer = Timer.periodic(const Duration(seconds: 30), (_) => _loadStats());
   }
 
   Future<void> _toggleOnline() async {
@@ -112,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: Text('Rickbo Driver', style: GoogleFonts.baloo2(fontWeight: FontWeight.w800, color: blue)),
+        title: Text('Rickbo Driver', style: TextStyle(fontWeight: FontWeight.w800, color: blue)),
         actions: [
           IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () => context.push('/dev-settings')),
           IconButton(
@@ -183,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 _isOnline ? 'LIVE' : 'OFFLINE',
-                                style: GoogleFonts.hind(
+                                style: TextStyle(
                                   color: _isOnline ? Colors.white : muted,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
@@ -209,12 +227,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Row(children: [
                     const Icon(Icons.location_off, color: red),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(_locationError!, style: GoogleFonts.hind(color: ink, fontSize: 13))),
+                    Expanded(child: Text(_locationError!, style: TextStyle(color: ink, fontSize: 13))),
                   ]),
                 ),
               ],
               const SizedBox(height: 24),
-              const _StatusGrid(),
+              _StatusGrid(stats: _stats),
               const SizedBox(height: 24),
               _TodayCard(),
               const Spacer(),
@@ -228,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: Text(
                         'Dev Mode: कोई भी 10 अंकों का नंबर चलेगा। ऑटो OTP "🪄 डेव OTP भरें" से।',
-                        style: GoogleFonts.hind(fontSize: 12, color: ink),
+                        style: TextStyle(fontSize: 12, color: ink),
                       ),
                     ),
                   ],
@@ -269,10 +287,10 @@ class _ProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(me.name ?? 'ड्राइवर', style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w800, color: ink)),
+                Text(me.name ?? 'ड्राइवर', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: ink)),
                 const SizedBox(height: 2),
                 Text((me.rickshawNumber ?? '—').toUpperCase(),
-                    style: GoogleFonts.baloo2(color: blue, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                    style: TextStyle(color: blue, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
               ],
             ),
           ),
@@ -292,7 +310,7 @@ class _ProfileCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(isOnline ? 'ऑनलाइन' : 'ऑफलाइन',
-                  style: GoogleFonts.hind(color: isOnline ? green : muted, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: isOnline ? green : muted, fontWeight: FontWeight.w700)),
             ]),
           ),
         ],
@@ -336,7 +354,7 @@ class _OnlineToggle extends StatelessWidget {
                         color: Colors.white, size: 50),
                     const SizedBox(height: 6),
                     Text(isOnline ? 'ऑफलाइन जाएँ' : 'ऑनलाइन जाएँ',
-                        style: GoogleFonts.baloo2(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+                        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
                   ],
                 ),
         ),
@@ -346,13 +364,17 @@ class _OnlineToggle extends StatelessWidget {
 }
 
 class _StatusGrid extends StatelessWidget {
-  const _StatusGrid();
+  final Map<String, dynamic>? stats;
+  const _StatusGrid({required this.stats});
   @override
   Widget build(BuildContext context) {
+    final rides = stats?['rides'] as int? ?? 0;
+    final earnings = (stats?['earnings'] as num?)?.toInt() ?? 0;
+    final rating = (stats?['ratingAvg'] as num?)?.toDouble() ?? 0.0;
     final items = [
-      {'label': 'सफ़र', 'value': '0', 'icon': Icons.route, 'color': tintBlue},
-      {'label': 'कमाई', 'value': '₹0', 'icon': Icons.account_balance_wallet, 'color': tintGreen},
-      {'label': 'रेटिंग', 'value': '4.8', 'icon': Icons.star, 'color': const Color(0xFFFFF6D5)},
+      {'label': 'आज सफ़र', 'value': '$rides', 'icon': Icons.route, 'color': tintBlue},
+      {'label': 'आज कमाई', 'value': '₹$earnings', 'icon': Icons.account_balance_wallet, 'color': tintGreen},
+      {'label': 'रेटिंग', 'value': rating > 0 ? rating.toStringAsFixed(1) : '—', 'icon': Icons.star, 'color': const Color(0xFFFFF6D5)},
     ];
     return Row(
       children: items.map((m) {
@@ -375,8 +397,8 @@ class _StatusGrid extends StatelessWidget {
                   child: Icon(m['icon'] as IconData, color: blue, size: 18),
                 ),
                 const SizedBox(height: 10),
-                Text(m['value'] as String, style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
-                Text(m['label'] as String, style: GoogleFonts.hind(fontSize: 12, color: muted)),
+                Text(m['value'] as String, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
+                Text(m['label'] as String, style: TextStyle(fontSize: 12, color: muted)),
               ],
             ),
           ),
@@ -407,10 +429,10 @@ class _TodayCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('महीने की सदस्यता', style: GoogleFonts.hind(color: Colors.white70, fontSize: 13)),
+                Text('महीने की सदस्यता', style: TextStyle(color: Colors.white70, fontSize: 13)),
                 const SizedBox(height: 2),
                 Text('₹299 — सीधे बैंक में जमा',
-                    style: GoogleFonts.baloo2(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
               ],
             ),
           ),

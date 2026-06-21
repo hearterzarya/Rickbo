@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../theme.dart';
@@ -49,12 +48,12 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('Rides load नहीं हुई: $e', style: GoogleFonts.hind(color: danger)),
+            child: Text('Rides load नहीं हुई: $e', style: TextStyle(color: danger)),
           ),
         ),
         data: (list) {
           if (list.isEmpty) {
-            return Center(child: Text('कोई ride नहीं', style: GoogleFonts.hind(color: muted)));
+            return Center(child: Text('कोई ride नहीं', style: TextStyle(color: muted)));
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -74,7 +73,7 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
                     children: [
                       Expanded(
                         child: Text('${r['fromZone']} → ${r['toZone']} · ₹${r['fare']}',
-                            style: GoogleFonts.baloo2(color: Colors.white, fontWeight: FontWeight.w700)),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       ),
                       _statusPill(status),
                     ],
@@ -85,7 +84,7 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
                       '👤 ${user?['phone'] ?? '?'}\n'
                       '🛺 ${driver?['rickshawNumber'] ?? driver?['phone'] ?? 'no driver'}\n'
                       '${_fmtTime(r['requestedAt']?.toString())}',
-                      style: GoogleFonts.hind(color: muted, fontSize: 12, height: 1.4),
+                      style: TextStyle(color: muted, fontSize: 12, height: 1.4),
                     ),
                   ),
                   isThreeLine: true,
@@ -110,7 +109,7 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
     return Padding(
       padding: const EdgeInsets.only(right: 6, bottom: 8, top: 4),
       child: FilterChip(
-        label: Text(label, style: GoogleFonts.hind(fontSize: 12, color: selected ? Colors.white : muted)),
+        label: Text(label, style: TextStyle(fontSize: 12, color: selected ? Colors.white : muted)),
         selected: selected,
         onSelected: (_) => setState(() => _statusFilter = val),
         backgroundColor: card2,
@@ -133,7 +132,7 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(color: c.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
-      child: Text(s, style: GoogleFonts.hind(color: c, fontSize: 10, fontWeight: FontWeight.w700)),
+      child: Text(s, style: TextStyle(color: c, fontSize: 10, fontWeight: FontWeight.w700)),
     );
   }
 
@@ -150,8 +149,8 @@ class _RidesListScreenState extends ConsumerState<RidesListScreen> {
       context: ctx,
       builder: (_) => AlertDialog(
         backgroundColor: card,
-        title: Text('Cancel ride?', style: GoogleFonts.baloo2(color: Colors.white)),
-        content: Text('Ride CANCELLED mark हो जाएगा', style: GoogleFonts.hind(color: muted)),
+        title: Text('Cancel ride?', style: TextStyle(color: Colors.white)),
+        content: Text('Ride CANCELLED mark हो जाएगा', style: TextStyle(color: muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Cancel ride', style: TextStyle(color: danger))),

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/ride_provider.dart';
 
@@ -47,10 +46,26 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
     _socket.off('ride:no-driver');
     _socket.off('ride:cancelled');
     _socket.off('ride:group-joined');
+    _socket.off('driver:location');
     super.dispose();
   }
 
   void _attachListeners() {
+    // Searching screen pe bhi driver:location sunna — agar match hone wala ho
+    // to user ko driver approach dikhe (warmup UX).
+    _socket.on('driver:location', (data) {
+      if (data is! Map) return;
+      final lat = (data['lat'] as num?)?.toDouble();
+      final lng = (data['lng'] as num?)?.toDouble();
+      if (lat == null || lng == null) return;
+      if (mounted) {
+        ref.read(activeRideProvider.notifier).update((r) => r.copyWith(
+              driverLat: lat,
+              driverLng: lng,
+            ));
+      }
+    });
+
     _socket.on('ride:matched', (data) {
       if (data is! Map) return;
       final id = data['rideId'] as String?;
@@ -83,9 +98,9 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text('कोई रिक्शा नहीं मिली', style: GoogleFonts.baloo2()),
+          title: Text('कोई रिक्शा नहीं मिली', style: TextStyle()),
           content: Text('अभी कोई रिक्शा खाली नहीं है। थोड़ी देर बाद दोबारा कोशिश करें।',
-              style: GoogleFonts.hind()),
+              style: TextStyle()),
           actions: [
             TextButton(
               onPressed: () {
@@ -120,11 +135,11 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
                 decoration: BoxDecoration(color: line, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 16),
-              Text('2 मिनट हो गए', style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
+              Text('2 मिनट हो गए', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 8),
               Text('कोई और सवारी नहीं मिली। अब क्या करें?',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                  style: TextStyle(color: muted, fontSize: 14)),
               const SizedBox(height: 24),
               _ShareFallback(
                 label: 'अकेले ₹25 में बुक करें',
@@ -238,8 +253,8 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
               children: [
                 Positioned.fill(
                   child: RickboMap(
-                    centerLat: pickupLat,
-                    centerLng: pickupLng,
+                    centerLat: ride?.driverLat ?? pickupLat,
+                    centerLng: ride?.driverLng ?? pickupLng,
                     zoom: 15,
                     markers: [
                       MapMarker(
@@ -249,6 +264,14 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
                         color: blue,
                         label: 'पिकअप',
                       ),
+                      if ((ride?.driverLat ?? -999) != -999)
+                        MapMarker(
+                          lat: ride!.driverLat!,
+                          lng: ride.driverLng!,
+                          icon: Icons.electric_rickshaw,
+                          color: const Color(0xFFFF6B00),
+                          label: 'ड्राइवर',
+                        ),
                     ],
                     showZoneDots: true,
                     interactive: true,
@@ -272,12 +295,12 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
                   const SizedBox(height: 16),
                   Text(
                     isShare ? 'साझा सवारी ढूंढ रहे हैं...' : 'रिक्शा ढूंढ रहे हैं...',
-                    style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, color: ink),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     '${ride?.fromZone ?? '—'} → ${ride?.toZone ?? '—'}  •  ₹${ride?.fare ?? 0} ${isShare ? "प्रति सवारी" : "पक्का किराया"}',
-                    style: GoogleFonts.hind(fontSize: 14, color: muted),
+                    style: TextStyle(fontSize: 14, color: muted),
                   ),
                   const SizedBox(height: 16),
                   if (isShare && _secondsLeft > 0) ...[
@@ -285,7 +308,7 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
                     const SizedBox(height: 8),
                     Text('2 मिनट में साझा सवारी मिलेगी',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.hind(fontSize: 13, color: muted)),
+                        style: TextStyle(fontSize: 13, color: muted)),
                   ] else
                     Column(
                       children: [
@@ -300,7 +323,7 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
                         const SizedBox(height: 10),
                         Text('20-20 सेकंड में अगले ड्राइवर को ऑफर जाएगा',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.hind(fontSize: 12, color: muted)),
+                            style: TextStyle(fontSize: 12, color: muted)),
                       ],
                     ),
                 ],
@@ -337,7 +360,7 @@ class _SearchingBadge extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             isShare ? 'साझा सवारी खोज रहे हैं' : 'पास के ड्राइवर खोज रहे हैं',
-            style: GoogleFonts.hind(fontSize: 13, fontWeight: FontWeight.w600, color: ink),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink),
           ),
         ],
       ),
@@ -366,7 +389,7 @@ class _ShareCountdown extends StatelessWidget {
           const Icon(Icons.timer, color: greenBright),
           const SizedBox(width: 10),
           Text('बाकी: $mm:$ss',
-              style: GoogleFonts.baloo2(
+              style: TextStyle(
                   fontSize: 22, fontWeight: FontWeight.w800, color: greenBright)),
         ],
       ),
@@ -408,8 +431,8 @@ class _ShareFallback extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: GoogleFonts.baloo2(fontSize: 16, fontWeight: FontWeight.w700, color: ink)),
-                  Text(subtitle, style: GoogleFonts.hind(fontSize: 12, color: muted)),
+                  Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ink)),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: muted)),
                 ],
               ),
             ),

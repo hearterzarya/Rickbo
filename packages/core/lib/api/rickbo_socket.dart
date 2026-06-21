@@ -29,7 +29,11 @@ class RickboSocket {
     required String baseUrl,
     required String token,
   }) async {
+    // ignore: avoid_print
+    print('[ws] RickboSocket.connect called baseUrl=$baseUrl tokenLen=${token.length}');
     if (_socket != null && _baseUrl == baseUrl && _token == token && _socket!.connected) {
+      // ignore: avoid_print
+      print('[ws] RickboSocket.connect: already connected, skip');
       return;
     }
     dispose();
@@ -43,14 +47,20 @@ class RickboSocket {
           .setAuth({'token': token})
           .build(),
     );
+    _socket!.onConnect((_) => /* ignore: avoid_print */ print('[ws] CONNECTED to $baseUrl'));
+    _socket!.onDisconnect((reason) => /* ignore: avoid_print */ print('[ws] DISCONNECTED: $reason'));
     _socket!.onConnectError((e) => /* ignore: avoid_print */ print('[ws] connect_error: $e'));
     _socket!.onError((e) => /* ignore: avoid_print */ print('[ws] error: $e'));
     // Re-bind all previously registered handlers to the new socket.
+    // ignore: avoid_print
+    print('[ws] RickboSocket.connect: identityHash=${identityHashCode(this)}, _handlers keys BEFORE re-bind=${_handlers.keys.toList()}');
     _handlers.forEach((event, fns) {
       for (final fn in fns) {
         _socket!.on(event, fn);
       }
     });
+    // ignore: avoid_print
+    print('[ws] RickboSocket.connect: re-bound ${_handlers.length} event types, calling connect()');
     _socket!.connect();
   }
 
@@ -59,7 +69,11 @@ class RickboSocket {
   }
 
   void on(String event, Function(dynamic) handler) {
+    // ignore: avoid_print
+    print('[ws] RickboSocket.on($event) called on identityHash=${identityHashCode(this)}, _handlers keys before=${_handlers.keys.toList()}');
     _handlers.putIfAbsent(event, () => []).add(handler);
+    // ignore: avoid_print
+    print('[ws] RickboSocket.on($event) after add, _handlers keys=${_handlers.keys.toList()}, count=${_handlers[event]!.length}');
     _socket?.on(event, handler);
   }
 

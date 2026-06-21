@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 class RideOtpScreen extends StatefulWidget {
@@ -58,21 +57,21 @@ class _RideOtpScreenState extends State<RideOtpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              Text('यात्री से OTP पूछें', style: GoogleFonts.baloo2(fontSize: 26, fontWeight: FontWeight.w800, color: ink)),
+              Text('यात्री से OTP पूछें', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 8),
               Text('सही OTP आने पर ही सफ़र शुरू करें',
-                  style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                  style: TextStyle(color: muted, fontSize: 14)),
               const SizedBox(height: 40),
               TextField(
                 controller: _ctrl,
                 keyboardType: TextInputType.number,
                 maxLength: 4,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.baloo2(fontSize: 44, fontWeight: FontWeight.w800, letterSpacing: 22),
+                style: TextStyle(fontSize: 44, fontWeight: FontWeight.w800, letterSpacing: 22),
                 decoration: InputDecoration(
                   counterText: '',
                   hintText: '0 0 0 0',
-                  hintStyle: GoogleFonts.baloo2(color: line, fontSize: 44, letterSpacing: 22),
+                  hintStyle: TextStyle(color: line, fontSize: 44, letterSpacing: 22),
                 ),
               ),
               const SizedBox(height: 24),

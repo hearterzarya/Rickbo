@@ -59,8 +59,10 @@ GoRouter buildRouter(WidgetRef ref) {
       ),
       GoRoute(
         path: '/booking/rate',
-        builder: (ctx, st) =>
-            RateRideScreen(rideId: (st.extra as Map?)?['rideId']?.toString() ?? ''),
+        builder: (ctx, st) => RateRideScreen(
+          rideId: (st.extra as Map?)?['rideId']?.toString() ?? '',
+          driverId: (st.extra as Map?)?['driverId']?.toString() ?? '',
+        ),
       ),
       GoRoute(path: '/dev-settings', builder: (_, __) => const DevSettingsScreen()),
     ],

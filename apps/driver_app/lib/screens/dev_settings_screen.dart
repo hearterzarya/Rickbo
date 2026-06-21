@@ -1,7 +1,6 @@
 // Mirrors user_app dev settings. Kept as its own file so each app can diverge later.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 class DevSettingsScreen extends StatefulWidget {
@@ -61,16 +60,16 @@ class _DevSettingsScreenState extends State<DevSettingsScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const SizedBox(height: 8),
-          Text('Backend URL', style: GoogleFonts.baloo2(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
+          Text('Backend URL', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink)),
           const SizedBox(height: 8),
           Text('Backend कहाँ सुन रहा है?',
-              style: GoogleFonts.hind(color: muted, fontSize: 14)),
+              style: TextStyle(color: muted, fontSize: 14)),
           const SizedBox(height: 20),
           TextField(
             controller: _ctrl,
             keyboardType: TextInputType.url,
             autocorrect: false,
-            style: GoogleFonts.hind(fontSize: 16),
+            style: TextStyle(fontSize: 16),
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               labelText: 'Base URL',
@@ -99,7 +98,7 @@ class _Hint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text('• $text', style: GoogleFonts.hind(color: muted, fontSize: 13)),
+      child: Text('• $text', style: TextStyle(color: muted, fontSize: 13)),
     );
   }
 }

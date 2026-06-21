@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rickbo_core/rickbo_core.dart';
@@ -67,6 +66,17 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
         timeLimit: const Duration(seconds: 5),
       );
       if (mounted) setState(() => _driverPos = p);
+      // Also push to backend + socket so the user sees us move on their map.
+      // Phase 1.C: postLocation is non-blocking; if backend hiccups, the next
+      // tick (8s) retries.
+      try {
+        await RickboApi().postLocation(p.latitude, p.longitude);
+      } catch (_) {}
+      // Socket push is best-effort; user map stays live even if it drops.
+      try {
+        final s = ref.read(driverSocketProvider);
+        s.emit('driver:location', {'lat': p.latitude, 'lng': p.longitude});
+      } catch (_) {}
     } catch (_) {}
   }
 
@@ -161,7 +171,7 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                         const SizedBox(width: 6),
                         Text(
                           widget.fromZone,
-                          style: GoogleFonts.hind(fontSize: 13, fontWeight: FontWeight.w700, color: ink),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink),
                         ),
                       ],
                     ),
@@ -187,10 +197,10 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                         const Icon(Icons.navigation, color: Colors.white, size: 48),
                         const SizedBox(height: 8),
                         Text('पिकअप पर जा रहे हैं',
-                            style: GoogleFonts.baloo2(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
                         const SizedBox(height: 4),
                         Text(widget.fromZone,
-                            style: GoogleFonts.hind(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
+                            style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -210,9 +220,9 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.userName, style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
+                              Text(widget.userName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
                               const SizedBox(height: 2),
-                              Text('${widget.passengerCount} यात्री', style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                              Text('${widget.passengerCount} यात्री', style: TextStyle(color: muted, fontSize: 13)),
                             ],
                           ),
                         ),
@@ -220,7 +230,7 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(color: green, borderRadius: BorderRadius.circular(20)),
                           child: Text('₹${widget.fare}',
-                              style: GoogleFonts.baloo2(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                         ),
                       ],
                     ),
@@ -237,8 +247,8 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('उतरना', style: GoogleFonts.hind(color: muted, fontSize: 12)),
-                              Text(widget.toZone, style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
+                              Text('उतरना', style: TextStyle(color: muted, fontSize: 12)),
+                              Text(widget.toZone, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: ink)),
                             ],
                           ),
                         ),
@@ -260,7 +270,7 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                               elevation: 4,
                             ),
                             child: Text('मैं पहुँच गया',
-                                style: GoogleFonts.baloo2(fontSize: 20, fontWeight: FontWeight.w800)),
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
                           ),
                         ),
                   const SizedBox(height: 8),
@@ -270,7 +280,7 @@ class _RideGoingScreenState extends ConsumerState<RideGoingScreen> {
                         try { await RickboApi().cancelRide(widget.rideId); } catch (_) {}
                         if (mounted) context.go('/');
                       },
-                      child: Text('रद्द करें', style: GoogleFonts.hind(color: muted)),
+                      child: Text('रद्द करें', style: TextStyle(color: muted)),
                     ),
                   ),
                 ],

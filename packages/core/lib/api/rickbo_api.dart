@@ -80,6 +80,12 @@ class RickboApi {
     return DriverModel.fromJson(r.data as Map<String, dynamic>);
   }
 
+  // Phase 2.5+ — driver home screen ke liye आज/हफ्ता/महीने का stats।
+  Future<Map<String, dynamic>> getDriverStats({String period = 'today'}) async {
+    final r = await _c.dio.get('/drivers/me/stats', queryParameters: {'period': period});
+    return r.data as Map<String, dynamic>;
+  }
+
   Future<List<Map<String, dynamic>>> getZones() async {
     final r = await _c.dio.get('/pricing/zones');
     return (r.data as List).cast<Map<String, dynamic>>();

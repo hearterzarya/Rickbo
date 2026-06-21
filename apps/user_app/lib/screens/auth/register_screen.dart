@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -47,15 +46,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text('अपना नाम बताइए', style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
+              Text('अपना नाम बताइए', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink)),
               const SizedBox(height: 8),
               Text('ताकि ड्राइवर आपको पहचान सके',
-                  style: GoogleFonts.hind(color: muted, fontSize: 14)),
+                  style: TextStyle(color: muted, fontSize: 14)),
               const SizedBox(height: 28),
               TextField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
-                style: GoogleFonts.hind(fontSize: 18),
+                style: TextStyle(fontSize: 18),
                 decoration: const InputDecoration(
                   labelText: 'पूरा नाम',
                   border: OutlineInputBorder(),

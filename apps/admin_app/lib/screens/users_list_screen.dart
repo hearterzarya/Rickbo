@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../theme.dart';
 
@@ -26,13 +25,13 @@ class UsersListScreen extends ConsumerWidget {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('Users load नहीं हुई: $e', style: GoogleFonts.hind(color: danger)),
+            child: Text('Users load नहीं हुई: $e', style: TextStyle(color: danger)),
           ),
         ),
         data: (list) {
           if (list.isEmpty) {
             return Center(
-              child: Text('कोई user नहीं', style: GoogleFonts.hind(color: muted)),
+              child: Text('कोई user नहीं', style: TextStyle(color: muted)),
             );
           }
           return RefreshIndicator(
@@ -52,10 +51,10 @@ class UsersListScreen extends ConsumerWidget {
                     child: Icon(Icons.person, color: banned ? danger : primary),
                   ),
                   title: Text(u['name']?.toString().isNotEmpty == true ? u['name'] : '(no name)',
-                      style: GoogleFonts.baloo2(color: Colors.white, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                   subtitle: Text(
                     '${u['phone']} · ${u['_count']?['rides'] ?? 0} rides · trust ${u['trustScore'] ?? 0}',
-                    style: GoogleFonts.hind(color: muted, fontSize: 12),
+                    style: TextStyle(color: muted, fontSize: 12),
                   ),
                   trailing: banned
                       ? OutlinedButton(
@@ -80,8 +79,8 @@ class UsersListScreen extends ConsumerWidget {
       context: ctx,
       builder: (_) => AlertDialog(
         backgroundColor: card,
-        title: Text('Ban user?', style: GoogleFonts.baloo2(color: Colors.white)),
-        content: Text('User login नहीं कर पाएगा', style: GoogleFonts.hind(color: muted)),
+        title: Text('Ban user?', style: TextStyle(color: Colors.white)),
+        content: Text('User login नहीं कर पाएगा', style: TextStyle(color: muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Ban', style: TextStyle(color: danger))),

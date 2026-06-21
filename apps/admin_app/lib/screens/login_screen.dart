@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../providers/auth_provider.dart';
 import '../theme.dart';
@@ -104,17 +103,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 18),
                   Text('Rickbo Admin',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(height: 4),
                   Text('Operations + Safety Control Room',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.hind(color: muted, fontSize: 13)),
+                      style: TextStyle(color: muted, fontSize: 13)),
                   const SizedBox(height: 36),
                   TextField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
                     maxLength: 10,
-                    style: GoogleFonts.baloo2(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                     decoration: const InputDecoration(
                       counterText: '',
                       labelText: 'Admin phone (+91)',
@@ -126,7 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(color: danger.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-                      child: Text(_error!, style: GoogleFonts.hind(color: danger, fontSize: 13)),
+                      child: Text(_error!, style: TextStyle(color: danger, fontSize: 13)),
                     ),
                   const SizedBox(height: 12),
                   _loading
@@ -139,17 +138,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 12),
-                  Text('API URL', style: GoogleFonts.baloo2(color: muted, fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text('API URL', style: TextStyle(color: muted, fontSize: 14, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _apiUrlCtrl,
-                    style: GoogleFonts.hind(color: Colors.white, fontSize: 13),
+                    style: TextStyle(color: Colors.white, fontSize: 13),
                     decoration: const InputDecoration(hintText: 'http://10.0.2.2:4000'),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Android emulator: 10.0.2.2:4000\nPhysical phone: <PC-LAN-IP>:4000',
-                    style: GoogleFonts.hind(color: muted, fontSize: 11, height: 1.4),
+                    style: TextStyle(color: muted, fontSize: 11, height: 1.4),
                   ),
                   const SizedBox(height: 8),
                   Row(

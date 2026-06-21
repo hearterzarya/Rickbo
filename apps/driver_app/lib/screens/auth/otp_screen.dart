@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart';
 import '../../providers/auth_provider.dart';
 
@@ -63,21 +62,21 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 12),
-            Text('OTP आया?', style: GoogleFonts.baloo2(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
+            Text('OTP आया?', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink)),
             const SizedBox(height: 8),
             Text('${widget.phone} पर 6 अंकों का OTP भेजा गया',
-                style: GoogleFonts.hind(fontSize: 15, color: muted)),
+                style: TextStyle(fontSize: 15, color: muted)),
             const SizedBox(height: 40),
             TextField(
               controller: _ctrl,
               keyboardType: TextInputType.number,
               maxLength: 6,
               textAlign: TextAlign.center,
-              style: GoogleFonts.baloo2(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 12),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 12),
               decoration: InputDecoration(
                 counterText: '',
                 hintText: '● ● ● ● ● ●',
-                hintStyle: GoogleFonts.hind(color: line, fontSize: 22, letterSpacing: 8),
+                hintStyle: TextStyle(color: line, fontSize: 22, letterSpacing: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -86,7 +85,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 child: TextButton(
                   onPressed: () => _ctrl.text = widget.devOtp,
                   child: Text('🪄 डेव OTP भरें (${widget.devOtp})',
-                      style: GoogleFonts.hind(color: cyan, fontSize: 13, fontWeight: FontWeight.w600)),
+                      style: TextStyle(color: cyan, fontSize: 13, fontWeight: FontWeight.w600)),
                 ),
               ),
             const SizedBox(height: 16),
@@ -97,7 +96,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             Center(
               child: TextButton(
                 onPressed: () => context.pop(),
-                child: Text('नंबर बदलें', style: GoogleFonts.hind(color: blue, fontSize: 14)),
+                child: Text('नंबर बदलें', style: TextStyle(color: blue, fontSize: 14)),
               ),
             ),
           ],

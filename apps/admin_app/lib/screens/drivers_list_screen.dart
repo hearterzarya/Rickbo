@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:rickbo_core/rickbo_core.dart' hide muted, card, ink;
 import '../theme.dart';
 
@@ -26,12 +25,12 @@ class DriversListScreen extends ConsumerWidget {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Text('Drivers load नहीं हुई: $e', style: GoogleFonts.hind(color: danger)),
+            child: Text('Drivers load नहीं हुई: $e', style: TextStyle(color: danger)),
           ),
         ),
         data: (list) {
           if (list.isEmpty) {
-            return Center(child: Text('कोई driver नहीं', style: GoogleFonts.hind(color: muted)));
+            return Center(child: Text('कोई driver नहीं', style: TextStyle(color: muted)));
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -57,7 +56,7 @@ class DriversListScreen extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           d['name']?.toString().isNotEmpty == true ? d['name'] : '(no name)',
-                          style: GoogleFonts.baloo2(color: Colors.white, fontWeight: FontWeight.w700),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
                         ),
                       ),
                       _StatusPill(text: status, color: _statusColor(status)),
@@ -69,7 +68,7 @@ class DriversListScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(online ? 'ON' : 'OFF',
-                            style: GoogleFonts.hind(color: online ? success : muted, fontSize: 10, fontWeight: FontWeight.w700)),
+                            style: TextStyle(color: online ? success : muted, fontSize: 10, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),
@@ -79,7 +78,7 @@ class DriversListScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${d['phone']} · ${d['rickshawNumber'] ?? 'no rickshaw'}',
-                            style: GoogleFonts.hind(color: muted, fontSize: 12)),
+                            style: TextStyle(color: muted, fontSize: 12)),
                         const SizedBox(height: 4),
                         Row(
                           children: [
@@ -88,7 +87,7 @@ class DriversListScreen extends ConsumerWidget {
                             _VerifyChip(label: 'Police', ok: verifiedP, onTap: () => _verifyPolice(ctx, ref, d['id'] as String)),
                             const SizedBox(width: 6),
                             Text('${d['_count']?['rides'] ?? 0} rides · ⭐ ${d['ratingAvg'] ?? '-'}',
-                                style: GoogleFonts.hind(color: muted, fontSize: 11)),
+                                style: TextStyle(color: muted, fontSize: 11)),
                           ],
                         ),
                       ],
@@ -165,7 +164,7 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(color: color.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
-      child: Text(text, style: GoogleFonts.hind(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+      child: Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
     );
   }
 }
@@ -192,7 +191,7 @@ class _VerifyChip extends StatelessWidget {
           children: [
             Icon(ok ? Icons.verified : Icons.verified_outlined, color: ok ? success : muted, size: 12),
             const SizedBox(width: 3),
-            Text(label, style: GoogleFonts.hind(color: ok ? success : muted, fontSize: 10)),
+            Text(label, style: TextStyle(color: ok ? success : muted, fontSize: 10)),
           ],
         ),
       ),

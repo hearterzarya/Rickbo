@@ -75,4 +75,4 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 
 function toRad(deg: number) {
   return (deg * Math.PI) / 180;
-}
+}// deployed: Sun Jun 21 05:30:54 UTC 2026

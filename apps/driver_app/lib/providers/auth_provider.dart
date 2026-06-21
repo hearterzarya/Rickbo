@@ -54,9 +54,9 @@ final driverSocketProvider = Provider<RickboSocket>((ref) {
       // Tell the server we exist.
       Future.delayed(const Duration(milliseconds: 300), () => s.emit('driver:online-init', {}));
     } else {
-      s.dispose();
+      s.disposeAll();
     }
   });
-  ref.onDispose(s.dispose);
+  ref.onDispose(s.disposeAll);
   return s;
 });

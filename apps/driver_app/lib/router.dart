@@ -30,17 +30,22 @@ class OfferOverlayHost extends ConsumerStatefulWidget {
 class _OfferOverlayHostState extends ConsumerState<OfferOverlayHost> {
   late final RickboSocket _socket;
   bool _busy = false;
+  bool _wired = false;
 
   @override
   void initState() {
     super.initState();
     _socket = ref.read(driverSocketProvider);
+    // Re-wire listener whenever a fresh socket appears (RickboSocket.connect
+    // disposes the previous socket, so any handlers registered on the old one
+    // are lost). We re-register after every login / reconnect.
     _socket.on('ride:offer', _handleOffer);
+    _wired = true;
   }
 
   @override
   void dispose() {
-    _socket.off('ride:offer');
+    if (_wired) _socket.off('ride:offer');
     super.dispose();
   }
 

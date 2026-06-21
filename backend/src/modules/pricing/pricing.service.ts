@@ -41,8 +41,10 @@ export class PricingService {
   }
 
   isNightNow(): boolean {
-    const h = new Date().getHours();
-    return h >= 21 || h < 6;
+    // "Night" per CLAUDE.md is 21:00–06:00 Indian local time (Asia/Kolkata, UTC+5:30).
+    // The server runs in UTC, so we must convert explicitly. India does not observe DST.
+    const istHour = (new Date().getUTCHours() + 5 + (new Date().getUTCMinutes() >= 30 ? 1 : 0)) % 24;
+    return istHour >= 21 || istHour < 6;
   }
 
   // Pick the closest zone center (we don't enforce radius for MVP — if the

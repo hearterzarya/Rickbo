@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rickbo Admin</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-2: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --primary: #2563eb;
+    --primary-2: #1d4ed8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px;
+  }
+  .login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  }
+  .login-card {
+    background: var(--card); padding: 40px 32px; border-radius: 16px; width: 360px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .login-card h1 { margin: 0 0 8px; font-size: 24px; }
+  .login-card .sub { color: var(--muted); margin-bottom: 24px; font-size: 13px; }
+  .login-card input {
+    width: 100%; padding: 12px 14px; background: var(--card-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; margin-bottom: 12px; font-size: 14px;
+  }
+  .login-card button {
+    width: 100%; padding: 12px; background: var(--primary); color: white; border: 0;
+    border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .login-card button:hover { background: var(--primary-2); }
+  .login-error { color: var(--danger); margin-top: 8px; font-size: 13px; }
+
+  header {
+    background: var(--card); padding: 12px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header .badge { background: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 11px; margin-left: 8px; }
+  header .right { display: flex; align-items: center; gap: 12px; }
+  header button {
+    background: var(--card-2); color: var(--text); border: 0; padding: 6px 12px;
+    border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+
+  nav.tabs {
+    display: flex; background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 0 24px; gap: 4px; overflow-x: auto;
+  }
+  nav.tabs button {
+    background: transparent; color: var(--muted); border: 0; padding: 12px 16px;
+    cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; white-space: nowrap;
+  }
+  nav.tabs button.active { color: var(--text); border-bottom-color: var(--primary); }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs .count {
+    background: var(--card-2); color: var(--muted); padding: 1px 7px; border-radius: 10px;
+    font-size: 11px; margin-left: 4px;
+  }
+  nav.tabs button.active .count { background: var(--primary); color: white; }
+
+  main { padding: 24px; }
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--card); padding: 16px 20px; border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat.alert .value { color: var(--danger); }
+  .stat.warn .value { color: var(--warning); }
+  .stat.ok .value { color: var(--success); }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .panel-header {
+    padding: 12px 16px; background: var(--card-2); display: flex; justify-content: space-between;
+    align-items: center; border-bottom: 1px solid var(--border);
+  }
+  .panel-header h3 { margin: 0; font-size: 14px; }
+  .panel-header .filters { display: flex; gap: 8px; }
+  .panel-header select, .panel-header input {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    padding: 5px 8px; border-radius: 6px; font-size: 12px;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; background: var(--card-2); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+  }
+  .pill-green { background: rgba(16,185,129,0.15); color: var(--success); }
+  .pill-blue { background: rgba(37,99,235,0.15); color: #60a5fa; }
+  .pill-yellow { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .pill-red { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .pill-gray { background: var(--card-2); color: var(--muted); }
+
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .actions button {
+    background: var(--card-2); color: var(--text); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  .actions button:hover { background: var(--primary); border-color: var(--primary); }
+  .actions button.danger { color: var(--danger); }
+  .actions button.danger:hover { background: var(--danger); color: white; }
+  .actions button.warn { color: var(--warning); }
+  .actions button.warn:hover { background: var(--warning); color: black; }
+
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+  .refresh-info { color: var(--muted); font-size: 12px; margin-left: 12px; }
+
+  /* Hide panels by default; show the active one */
+  .panel-section { display: none; }
+  .panel-section.active { display: block; }
+
+  @media (max-width: 640px) {
+    main { padding: 12px; }
+    th, td { padding: 8px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== LOGIN ============== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h1>🚖 Rickbo Admin</h1>
+    <div class="sub">रिक्शा, बस एक टैप — control room</div>
+    <input id="loginUser" type="text" placeholder="Username" value="admin" />
+    <input id="loginPass" type="password" placeholder="Password" />
+    <button onclick="doLogin()">लॉगिन</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ============== DASHBOARD ============== -->
+<div id="dashScreen" style="display:none;">
+  <header>
+    <h1>🚖 Rickbo Admin <span class="badge">CONTROL ROOM</span></h1>
+    <div class="right">
+      <span id="who" style="color:var(--muted);font-size:12px;"></span>
+      <button onclick="doRefresh()">🔄 Refresh</button>
+      <button onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+  <nav class="tabs">
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="rides">Rides <span class="count" id="cntRides">0</span></button>
+    <button data-tab="drivers">Drivers <span class="count" id="cntDrivers">0</span></button>
+    <button data-tab="users">Users <span class="count" id="cntUsers">0</span></button>
+    <button data-tab="sos">SOS <span class="count" id="cntSos">0</span></button>
+    <button data-tab="complaints">Complaints <span class="count" id="cntComplaints">0</span></button>
+  </nav>
+  <main>
+    <!-- Overview -->
+    <section class="panel-section active" data-section="overview">
+      <div class="stats" id="statsGrid"></div>
+      <div class="panel">
+        <div class="panel-header"><h3>Latest Rides (last 10)</h3></div>
+        <div class="table-wrap"><table id="latestRidesTable">
+          <thead><tr><th>Time</th><th>Mode</th><th>From→To</th><th>Driver</th><th>Status</th><th>Fare</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- Rides -->
+    <section class="panel-section" data-section="rides">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>All Rides</h3>
+          <div class="filters">
+            <select id="rideStatusFilter" onchange="loadRides()">
+              <option value="">All</option>
+              <option value="REQUESTED">REQUESTED</option>
+              <option value="MATCHED">MATCHED</option>
+              <option value="ARRIVED">ARRIVED</option>
+              <option value="ONGOING">ONGOING</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap"><table id="ridesTable">
+          <thead><tr><th>ID</th><th>Time</th><th>User</th><th>Driver</th><th>Mode</th><th>From→To</th><th>Fare</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- Drivers -->
+    <section class="panel-section" data-section="drivers">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>All Drivers</h3>
+          <div class="filters">
+            <select id="driverStatusFilter" onchange="loadDrivers()">
+              <option value="">All</option>
+              <option value="PENDING">PENDING</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="SUSPENDED">SUSPENDED</option>
+              <option value="BANNED">BANNED</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap"><table id="driversTable">
+          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Rickshaw</th><th>Status</th><th>Online</th><th>Rating</th><th>Rides</th><th>Sub Until</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- Users -->
+    <section class="panel-section" data-section="users">
+      <div class="panel">
+        <div class="panel-header"><h3>All Users</h3></div>
+        <div class="table-wrap"><table id="usersTable">
+          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Trust</th><th>Rides</th><th>Created</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- SOS -->
+    <section class="panel-section" data-section="sos">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>SOS Events</h3>
+          <div class="filters">
+            <select id="sosResolvedFilter" onchange="loadSos()">
+              <option value="false">Open</option>
+              <option value="true">Resolved</option>
+              <option value="">All</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap"><table id="sosTable">
+          <thead><tr><th>Time</th><th>Ride</th><th>Raised By</th><th>Lat,Lng</th><th>User</th><th>Driver</th><th>Notes</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- Complaints -->
+    <section class="panel-section" data-section="complaints">
+      <div class="panel">
+        <div class="panel-header"><h3>Complaints</h3></div>
+        <div class="table-wrap"><table id="complaintsTable">
+          <thead><tr><th>Ride</th><th>Against</th><th>Reason</th><th>Severity</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // === State ===
+  let TOKEN = localStorage.getItem('rickbo_admin_token') || '';
+  let ME = localStorage.getItem('rickbo_admin_user') || '';
+  let activeTab = 'overview';
+  let autoTimer = null;
+
+  // === API helper ===
+  async function api(path, opts = {}) {
+    const res = await fetch('/admin/' + path, {
+      method: opts.method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(TOKEN ? { 'Authorization': 'Bearer ' + TOKEN } : {}),
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (res.status === 401) {
+      doLogout();
+      throw new Error('401');
+    }
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(t || res.statusText);
+    }
+    return res.json();
+  }
+
+  // === Login ===
+  async function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    document.getElementById('loginError').textContent = '';
+    try {
+      const out = await api('login', { method: 'POST', body: { username: u, password: p } });
+      TOKEN = out.token;
+      ME = out.username;
+      localStorage.setItem('rickbo_admin_token', TOKEN);
+      localStorage.setItem('rickbo_admin_user', ME);
+      showDash();
+    } catch (e) {
+      document.getElementById('loginError').textContent = 'लॉगिन नहीं हुआ: ' + e.message;
+    }
+  }
+  function doLogout() {
+    TOKEN = ''; ME = '';
+    localStorage.removeItem('rickbo_admin_token');
+    localStorage.removeItem('rickbo_admin_user');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashScreen').style.display = 'none';
+    if (autoTimer) clearInterval(autoTimer);
+  }
+
+  // === Show dashboard ===
+  function showDash() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashScreen').style.display = 'block';
+    document.getElementById('who').textContent = '👤 ' + ME;
+    doRefresh();
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(doRefresh, 15000); // auto-refresh every 15s
+  }
+
+  // === Tabs ===
+  document.querySelectorAll('nav.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.panel-section').forEach(s => s.classList.toggle('active', s.dataset.section === activeTab));
+      doRefresh();
+    });
+  });
+
+  // === Helpers ===
+  function fmtTime(d) {
+    if (!d) return '-';
+    const dt = new Date(d);
+    const today = new Date();
+    const sameDay = dt.toDateString() === today.toDateString();
+    if (sameDay) return dt.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+    return dt.toLocaleString('hi-IN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+  function statusPill(s) {
+    const cls = {
+      REQUESTED: 'pill-blue', MATCHED: 'pill-blue', ARRIVED: 'pill-yellow',
+      ONGOING: 'pill-green', COMPLETED: 'pill-green', CANCELLED: 'pill-gray',
+      ACTIVE: 'pill-green', PENDING: 'pill-yellow', SUSPENDED: 'pill-yellow', BANNED: 'pill-red',
+      USER: 'pill-blue', DRIVER: 'pill-yellow',
+      OPEN: 'pill-red', RESOLVED: 'pill-green',
+    }[s] || 'pill-gray';
+    return `<span class="pill ${cls}">${s}</span>`;
+  }
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function shortId(id) { return id ? id.slice(0, 6) : '-'; }
+
+  // === Load: stats + tab data ===
+  async function doRefresh() {
+    if (!TOKEN) return;
+    try {
+      const stats = await api('stats');
+      renderStats(stats);
+    } catch (e) { console.error('stats', e); }
+    try {
+      if (activeTab === 'overview') {
+        const rides = await api('rides?limit=10');
+        renderLatestRides(rides);
+        const sos = await api('sos?resolved=false');
+        document.getElementById('cntSos').textContent = sos.length;
+        const comp = await api('complaints');
+        document.getElementById('cntComplaints').textContent = comp.filter(c => c.status === 'OPEN').length;
+        const drivers = await api('drivers');
+        document.getElementById('cntDrivers').textContent = drivers.length;
+        const users = await api('users');
+        document.getElementById('cntUsers').textContent = users.length;
+        document.getElementById('cntRides').textContent = await api('rides?limit=500').then(r => r.length).catch(() => 0);
+      }
+      else if (activeTab === 'rides') loadRides();
+      else if (activeTab === 'drivers') loadDrivers();
+      else if (activeTab === 'users') loadUsers();
+      else if (activeTab === 'sos') loadSos();
+      else if (activeTab === 'complaints') loadComplaints();
+    } catch (e) { console.error('refresh', e); }
+  }
+
+  function renderStats(s) {
+    const html = `
+      <div class="stat"><div class="label">Users</div><div class="value">${s.users}</div></div>
+      <div class="stat ok"><div class="label">Drivers Online</div><div class="value">${s.onlineDrivers}</div></div>
+      <div class="stat"><div class="label">Total Drivers</div><div class="value">${s.drivers}</div></div>
+      <div class="stat"><div class="label">Total Rides</div><div class="value">${s.rides}</div></div>
+      <div class="stat"><div class="label">Rides Today</div><div class="value">${s.ridesToday}</div></div>
+      <div class="stat ok"><div class="label">Completed Today</div><div class="value">${s.completedToday}</div></div>
+      <div class="stat ok"><div class="label">Revenue Today (₹)</div><div class="value">${s.revenueToday}</div></div>
+      <div class="stat ${s.sosOpen > 0 ? 'alert' : ''}"><div class="label">Open SOS</div><div class="value">${s.sosOpen}</div></div>
+    `;
+    document.getElementById('statsGrid').innerHTML = html;
+  }
+
+  function renderLatestRides(rides) {
+    const tb = document.querySelector('#latestRidesTable tbody');
+    if (!rides.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No rides yet</td></tr>'; return; }
+    tb.innerHTML = rides.map(r => `
+      <tr>
+        <td>${fmtTime(r.requestedAt)}</td>
+        <td>${r.mode}</td>
+        <td>${r.fromZone} → ${r.toZone}</td>
+        <td>${esc(r.driver?.name || '-')}</td>
+        <td>${statusPill(r.status)}</td>
+        <td>₹${r.fare}</td>
+      </tr>
+    `).join('');
+  }
+
+  // === Rides ===
+  async function loadRides() {
+    const status = document.getElementById('rideStatusFilter').value;
+    const rides = await api('rides?limit=200' + (status ? '&status=' + status : ''));
+    const tb = document.querySelector('#ridesTable tbody');
+    document.getElementById('cntRides').textContent = rides.length;
+    if (!rides.length) { tb.innerHTML = '<tr><td colspan="9" class="empty">No rides</td></tr>'; return; }
+    tb.innerHTML = rides.map(r => `
+      <tr>
+        <td title="${r.id}">${shortId(r.id)}</td>
+        <td>${fmtTime(r.requestedAt)}</td>
+        <td>${esc(r.user?.name || r.user?.phone || '-')}</td>
+        <td>${esc(r.driver?.name || r.driver?.rickshawNumber || '-')}</td>
+        <td>${r.mode}</td>
+        <td>${r.fromZone}→${r.toZone}</td>
+        <td>₹${r.fare}</td>
+        <td>${statusPill(r.status)}</td>
+        <td class="actions">
+          ${r.status !== 'COMPLETED' && r.status !== 'CANCELLED' ? `<button class="danger" onclick="adminCancelRide('${r.id}')">Cancel</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  async function adminCancelRide(id) {
+    if (!confirm('Cancel ride ' + shortId(id) + '?')) return;
+    await api('rides/' + id + '/cancel', { method: 'POST' });
+    loadRides();
+  }
+
+  // === Drivers ===
+  async function loadDrivers() {
+    const status = document.getElementById('driverStatusFilter').value;
+    const drivers = await api('drivers?limit=300' + (status ? '&status=' + status : ''));
+    const tb = document.querySelector('#driversTable tbody');
+    document.getElementById('cntDrivers').textContent = drivers.length;
+    if (!drivers.length) { tb.innerHTML = '<tr><td colspan="10" class="empty">No drivers</td></tr>'; return; }
+    tb.innerHTML = drivers.map(d => `
+      <tr>
+        <td title="${d.id}">${shortId(d.id)}</td>
+        <td>${esc(d.name || '-')}</td>
+        <td>${esc(d.phone)}</td>
+        <td>${esc(d.rickshawNumber || '-')}</td>
+        <td>${statusPill(d.status)}</td>
+        <td>${d.isOnline ? '<span class="pill pill-green">ON</span>' : '<span class="pill pill-gray">OFF</span>'}</td>
+        <td>${d.ratingAvg ? d.ratingAvg.toFixed(1) : '-'}</td>
+        <td>${d._count?.rides ?? 0}</td>
+        <td>${d.subscriptionValidUntil ? new Date(d.subscriptionValidUntil).toLocaleDateString('hi-IN') : '-'}</td>
+        <td class="actions">
+          ${d.status !== 'BANNED' ? `<button class="danger" onclick="adminBan('${d.id}')">Ban</button>` : `<button onclick="adminUnban('${d.id}')">Unban</button>`}
+          ${d.status === 'ACTIVE' ? `<button class="warn" onclick="adminSuspend('${d.id}')">Suspend</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  async function adminBan(id) {
+    if (!confirm('Ban driver ' + shortId(id) + '?')) return;
+    await api('drivers/' + id + '/ban', { method: 'POST', body: { reason: 'admin' } });
+    loadDrivers();
+  }
+  async function adminUnban(id) {
+    if (!confirm('Unban driver ' + shortId(id) + '?')) return;
+    await api('drivers/' + id + '/unban', { method: 'POST' });
+    loadDrivers();
+  }
+  async function adminSuspend(id) {
+    if (!confirm('Suspend driver ' + shortId(id) + '?')) return;
+    await api('drivers/' + id + '/suspend', { method: 'POST' });
+    loadDrivers();
+  }
+
+  // === Users ===
+  async function loadUsers() {
+    const users = await api('users?limit=300');
+    const tb = document.querySelector('#usersTable tbody');
+    document.getElementById('cntUsers').textContent = users.length;
+    if (!users.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No users</td></tr>'; return; }
+    tb.innerHTML = users.map(u => `
+      <tr>
+        <td title="${u.id}">${shortId(u.id)}</td>
+        <td>${esc(u.name || '-')}</td>
+        <td>${esc(u.phone)}</td>
+        <td>${u.trustScore}</td>
+        <td>${u._count?.rides ?? 0}</td>
+        <td>${fmtTime(u.createdAt)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // === SOS ===
+  async function loadSos() {
+    const r = document.getElementById('sosResolvedFilter').value;
+    const sos = await api('sos?resolved=' + r);
+    const tb = document.querySelector('#sosTable tbody');
+    document.getElementById('cntSos').textContent = sos.length;
+    if (!sos.length) { tb.innerHTML = '<tr><td colspan="8" class="empty">No SOS events</td></tr>'; return; }
+    tb.innerHTML = sos.map(s => `
+      <tr>
+        <td>${fmtTime(s.createdAt)}</td>
+        <td title="${s.rideId}">${shortId(s.rideId)}</td>
+        <td>${statusPill(s.raisedBy)}</td>
+        <td>${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</td>
+        <td>${esc(s.ride?.user?.name || s.ride?.user?.phone || '-')}</td>
+        <td>${esc(s.ride?.driver?.name || s.ride?.driver?.rickshawNumber || '-')}</td>
+        <td>${esc(s.notes || '-')}</td>
+        <td class="actions">
+          ${!s.resolved ? `<button class="warn" onclick="adminResolveSos('${s.id}')">Mark Resolved</button>` : statusPill('RESOLVED')}
+        </td>
+      </tr>
+    `).join('');
+  }
+  async function adminResolveSos(id) {
+    const notes = prompt('Resolution notes (optional):') || '';
+    await api('sos/' + id + '/resolve', { method: 'POST', body: { notes } });
+    loadSos();
+  }
+
+  // === Complaints ===
+  async function loadComplaints() {
+    const c = await api('complaints');
+    const tb = document.querySelector('#complaintsTable tbody');
+    document.getElementById('cntComplaints').textContent = c.length;
+    if (!c.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No complaints</td></tr>'; return; }
+    tb.innerHTML = c.map(x => `
+      <tr>
+        <td title="${x.rideId}">${shortId(x.rideId)}</td>
+        <td>${x.against}</td>
+        <td>${esc(x.reason)}</td>
+        <td>${x.severity}</td>
+        <td>${statusPill(x.status)}</td>
+        <td class="actions">
+          ${x.status === 'OPEN' ? `<button class="warn" onclick="adminResolveComplaint('${x.id}')">Resolve</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  async function adminResolveComplaint(id) {
+    await api('complaints/' + id + '/resolve', { method: 'POST' });
+    loadComplaints();
+  }
+
+  // === Init ===
+  if (TOKEN && ME) showDash();
+  // Allow Enter key on login
+  document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

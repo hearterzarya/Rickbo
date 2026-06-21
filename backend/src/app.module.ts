@@ -9,6 +9,7 @@ import { MatchingModule } from './modules/matching/matching.module';
 import { PricingModule } from './modules/pricing/pricing.module';
 import { SafetyModule } from './modules/safety/safety.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     PricingModule,
     SafetyModule,
     RealtimeModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

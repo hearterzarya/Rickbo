@@ -4,12 +4,12 @@ import { AuthService } from './auth.service';
 interface TestOtpReq {
   phone: string;          // E.164, e.g. +919876543210
   otp: string;             // 6-digit code
-  role: 'user' | 'driver';
+  role: 'user' | 'driver' | 'admin';
 }
 
 interface TestOtpStartReq {
   phone: string;
-  role: 'user' | 'driver';
+  role: 'user' | 'driver' | 'admin';
 }
 
 @Controller('auth')
@@ -60,6 +60,19 @@ export class AuthController {
       throw new BadRequestException('OTP गलत है');
     }
     this.pending.delete(body.phone);
+    return this.auth.verifyTest(body.phone, body.role ?? 'user');
+  }
+
+  // ONE-CALL dev login: start + verify in a single round-trip.
+  // Uses a FIXED OTP for the demo. Caller still passes phone+role,
+  // and we return the JWT directly so an emulator can hit this once and
+  // land on home — no need to swap screens and copy an OTP.
+  @Post('test-otp')
+  async oneCallTestOtp(@Body() body: { phone: string; role: 'user' | 'driver' }) {
+    if (!body?.phone) throw new BadRequestException('phone चाहिए');
+    if (!/^\+?\d{10,15}$/.test(body.phone.replace(/\s/g, ''))) {
+      throw new BadRequestException('phone सही नहीं है');
+    }
     return this.auth.verifyTest(body.phone, body.role ?? 'user');
   }
 }

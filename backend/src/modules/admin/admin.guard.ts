@@ -1,24 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
-export interface AdminJwtPayload {
-  sub: string;
-  role: 'admin';
-  username: string;
-}
-
+/**
+ * Allows the request only if the JWT carries role === 'admin'.
+ * Used to gate /admin/* endpoints. The token is signed by the same
+ * auth/login flow as user/driver tokens, so admins can log in via
+ * the same /auth/test-otp endpoint with role='admin'.
+ */
 @Injectable()
-export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
-  constructor(config: ConfigService) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get<string>('JWT_SECRET') || 'dev-secret-change-in-prod',
-    });
-  }
-  async validate(payload: AdminJwtPayload): Promise<AdminJwtPayload> {
-    if (payload.role !== 'admin') throw new Error('not admin');
-    return payload;
+export class AdminGuard implements CanActivate {
+  constructor(private jwt: JwtService) {}
+
+  canActivate(ctx: ExecutionContext): boolean {
+    const req = ctx.switchToHttp().getRequest();
+    const auth = req.headers['authorization'] as string | undefined;
+    if (!auth || !auth.startsWith('Bearer ')) {
+      throw new ForbiddenException('admin token required');
+    }
+    const token = auth.slice('Bearer '.length).trim();
+    try {
+      const payload = this.jwt.verify(token) as { role?: string };
+      if (payload.role !== 'admin') {
+        throw new ForbiddenException('admin role required');
+      }
+      req.adminPayload = payload;
+      return true;
+    } catch (e) {
+      throw new ForbiddenException('admin token invalid');
+    }
   }
 }

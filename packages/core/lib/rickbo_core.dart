@@ -8,6 +8,7 @@ export 'models/driver_model.dart';
 export 'models/ride_model.dart';
 export 'api/api_client.dart';
 export 'api/rickbo_api.dart';
+export 'api/admin_api.dart';
 export 'api/rickbo_socket.dart';
 export 'widgets/hindi_error.dart';
 export 'widgets/empty_state.dart';

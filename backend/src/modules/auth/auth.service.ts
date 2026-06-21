@@ -30,7 +30,7 @@ export class AuthService {
   // flow still works without configuring Firebase.
   async verify(
     firebaseToken: string,
-    role: 'user' | 'driver',
+    role: 'user' | 'driver' | 'admin',
   ): Promise<{ token: string; profile: any; isNew: boolean }> {
     let phone: string;
     try {
@@ -49,12 +49,12 @@ export class AuthService {
   // Verify a Test OTP login — no Firebase at all. Phone is provided directly.
   async verifyTest(
     phone: string,
-    role: 'user' | 'driver',
+    role: 'user' | 'driver' | 'admin',
   ): Promise<{ token: string; profile: any; isNew: boolean }> {
     return this.upsertAndSign(phone, role);
   }
 
-  private async upsertAndSign(phone: string, role: 'user' | 'driver') {
+  private async upsertAndSign(phone: string, role: 'user' | 'driver' | 'admin') {
     let profile: any;
     let isNew = false;
     if (role === 'driver') {
@@ -65,10 +65,21 @@ export class AuthService {
         });
         isNew = true;
       } else {
-        // Auto-activate on subsequent logins so testing is smooth.
         profile = existing.status === 'PENDING'
           ? await this.prisma.driver.update({ where: { id: existing.id }, data: { status: 'ACTIVE' } })
           : existing;
+      }
+    } else if (role === 'admin') {
+      // Admins reuse the User table with role=ADMIN.
+      const existing = await this.prisma.user.findUnique({ where: { phone } });
+      if (!existing) {
+        profile = await this.prisma.user.create({ data: { phone, role: 'ADMIN' } });
+        isNew = true;
+      } else if (existing.role !== 'ADMIN') {
+        // Promote to admin on first admin-login with this number.
+        profile = await this.prisma.user.update({ where: { id: existing.id }, data: { role: 'ADMIN' } });
+      } else {
+        profile = existing;
       }
     } else {
       const existing = await this.prisma.user.findUnique({ where: { phone } });

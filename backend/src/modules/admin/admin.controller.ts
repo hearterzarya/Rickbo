@@ -1,90 +1,93 @@
-import {
-  Controller, Post, Get, Body, Param, UseGuards, Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { AdminAuthGuard } from './admin-auth.guard';
+import { AdminGuard } from './admin.guard';
 
 @Controller('admin')
+@UseGuards(AdminGuard)
 export class AdminController {
   constructor(private admin: AdminService) {}
 
-  @Post('login')
-  login(@Body() body: { username: string; password: string }) {
-    return this.admin.login(body.username, body.password);
-  }
-
-  @UseGuards(AdminAuthGuard)
+  // ─── Overview ─────────────────────────────────────────────────
   @Get('stats')
   stats() {
     return this.admin.stats();
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Get('rides')
-  rides(@Query('limit') limit?: string, @Query('status') status?: string) {
-    return this.admin.listRides({ limit: limit ? Number(limit) : 100, status });
-  }
-
-  @UseGuards(AdminAuthGuard)
-  @Get('drivers')
-  drivers(@Query('limit') limit?: string, @Query('status') status?: string) {
-    return this.admin.listDrivers({ limit: limit ? Number(limit) : 200, status });
-  }
-
-  @UseGuards(AdminAuthGuard)
+  // ─── Users ─────────────────────────────────────────────────────
   @Get('users')
-  users(@Query('limit') limit?: string) {
-    return this.admin.listUsers(limit ? Number(limit) : 200);
+  users() {
+    return this.admin.listUsers();
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Get('sos')
-  sos(@Query('resolved') resolved?: string) {
-    let r: boolean | undefined;
-    if (resolved === 'true') r = true;
-    else if (resolved === 'false') r = false;
-    return this.admin.listSos({ resolved: r });
+  @Post('users/:id/ban')
+  banUser(@Param('id') id: string) {
+    return this.admin.banUser(id);
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Post('sos/:id/resolve')
-  resolveSos(@Param('id') id: string, @Body() body: { notes?: string }) {
-    return this.admin.resolveSos(id, body?.notes);
+  @Post('users/:id/unban')
+  unbanUser(@Param('id') id: string) {
+    return this.admin.unbanUser(id);
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Post('drivers/:id/ban')
-  banDriver(@Param('id') id: string, @Body() body: { reason?: string }) {
-    return this.admin.banDriver(id, body?.reason || 'banned by admin');
+  // ─── Drivers ───────────────────────────────────────────────────
+  @Get('drivers')
+  drivers() {
+    return this.admin.listDrivers();
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Post('drivers/:id/unban')
-  unbanDriver(@Param('id') id: string) {
-    return this.admin.unbanDriver(id);
+  @Post('drivers/:id/approve')
+  approveDriver(@Param('id') id: string) {
+    return this.admin.approveDriver(id);
   }
 
-  @UseGuards(AdminAuthGuard)
   @Post('drivers/:id/suspend')
   suspendDriver(@Param('id') id: string) {
     return this.admin.suspendDriver(id);
   }
 
-  @UseGuards(AdminAuthGuard)
+  @Post('drivers/:id/ban')
+  banDriver(@Param('id') id: string) {
+    return this.admin.banDriver(id);
+  }
+
+  @Post('drivers/:id/verify-aadhaar')
+  verifyAadhaar(@Param('id') id: string) {
+    return this.admin.verifyDriver(id, 'aadhaar');
+  }
+
+  @Post('drivers/:id/verify-police')
+  verifyPolice(@Param('id') id: string) {
+    return this.admin.verifyDriver(id, 'police');
+  }
+
+  // ─── Rides ─────────────────────────────────────────────────────
+  @Get('rides')
+  rides(@Query('status') status?: string) {
+    return this.admin.listRides(status);
+  }
+
   @Post('rides/:id/cancel')
   cancelRide(@Param('id') id: string) {
     return this.admin.cancelRide(id);
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Get('complaints')
-  complaints() {
-    return this.admin.listComplaints();
+  // ─── SOS ───────────────────────────────────────────────────────
+  @Get('sos')
+  sos(@Query('resolved') resolved?: string) {
+    let r: boolean | undefined;
+    if (resolved === 'true') r = true;
+    else if (resolved === 'false') r = false;
+    return this.admin.listSos(r);
   }
 
-  @UseGuards(AdminAuthGuard)
-  @Post('complaints/:id/resolve')
-  resolveComplaint(@Param('id') id: string) {
-    return this.admin.resolveComplaint(id);
+  @Post('sos/:id/resolve')
+  resolveSos(@Param('id') id: string, @Body() body: { notes?: string }) {
+    return this.admin.resolveSos(id, body?.notes);
+  }
+
+  // ─── Zones (read-only) ────────────────────────────────────────
+  @Get('zones')
+  zones() {
+    return this.admin.listZones();
   }
 }

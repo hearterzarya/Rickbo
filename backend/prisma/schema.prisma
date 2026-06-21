@@ -16,9 +16,16 @@ model User {
   photoUrl   String?
   fcmToken   String?
   trustScore Int      @default(0)
+  role       UserRole @default(USER)
+  isBanned   Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   rides      Ride[]
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 model Driver {

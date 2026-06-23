@@ -220,6 +220,20 @@ class _RideInProgressScreenState extends ConsumerState<RideInProgressScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Big primary "सफ़र शेयर करें" button — the safety UX.
+                      // Sits in the bottom bar so it's always reachable, not
+                      // hidden as a tiny icon in the header. (Phase 3.)
+                      if (ride?.shareToken != null) ...[
+                        _ShareRideButton(
+                          shareToken: ride!.shareToken!,
+                          fromZone: ride.fromZone,
+                          toZone: ride.toZone,
+                          fare: ride.fare,
+                          driverName: ride.driver?['name']?.toString() ?? 'ड्राइवर',
+                          driverPhone: ride.driver?['phone']?.toString() ?? '',
+                        ),
+                        const SizedBox(height: 6),
+                      ],
                       Center(
                         child: TextButton.icon(
                           onPressed: () => _cancelRideFlow(),
@@ -440,7 +454,7 @@ class _InProgressHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              _ShareButton(shareToken: shareToken),
+              _ShareHeaderButton(shareToken: shareToken),
             ],
           ),
         ],
@@ -449,14 +463,16 @@ class _InProgressHeader extends StatelessWidget {
   }
 }
 
-class _ShareButton extends StatefulWidget {
+/// Tiny icon in the header — quick access. The main share button lives in
+/// the bottom bar (see [_ShareRideButton]).
+class _ShareHeaderButton extends StatefulWidget {
   final String? shareToken;
-  const _ShareButton({required this.shareToken});
+  const _ShareHeaderButton({required this.shareToken});
   @override
-  State<_ShareButton> createState() => _ShareButtonState();
+  State<_ShareHeaderButton> createState() => _ShareHeaderButtonState();
 }
 
-class _ShareButtonState extends State<_ShareButton> {
+class _ShareHeaderButtonState extends State<_ShareHeaderButton> {
   String? _url;
   bool _built = false;
 
@@ -494,6 +510,251 @@ class _ShareButtonState extends State<_ShareButton> {
           );
         }
       },
+    );
+  }
+}
+
+/// Big "सफ़र शेयर करें" button that lives in the bottom bar. Tap → bottom
+/// sheet with three options: WhatsApp (pre-filled Hindi msg + URL),
+/// कॉपी करें (just the URL), SMS (Hindi msg + URL).
+///
+/// We don't pull in share_plus — we copy to clipboard and let the user
+/// open WhatsApp. Works on every Android version, no extra deps, no
+/// runtime permission changes.
+class _ShareRideButton extends StatefulWidget {
+  final String shareToken;
+  final String fromZone;
+  final String toZone;
+  final int fare;
+  final String driverName;
+  final String driverPhone;
+  const _ShareRideButton({
+    required this.shareToken,
+    required this.fromZone,
+    required this.toZone,
+    required this.fare,
+    required this.driverName,
+    required this.driverPhone,
+  });
+
+  @override
+  State<_ShareRideButton> createState() => _ShareRideButtonState();
+}
+
+class _ShareRideButtonState extends State<_ShareRideButton> {
+  String? _url;
+  bool _built = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _build();
+  }
+
+  Future<void> _build() async {
+    final base = await ApiClient().getBaseUrl();
+    if (!mounted) return;
+    setState(() {
+      _url = RickboApi().buildShareUrl(baseUrl: base, shareToken: widget.shareToken);
+      _built = true;
+    });
+  }
+
+  /// Hindi share message — same wording for WhatsApp, SMS, anywhere.
+  /// Driver's name + phone are included so family can call if needed.
+  String _shareText() {
+    final driverLine = widget.driverName.isNotEmpty
+        ? 'ड्राइवर: ${widget.driverName} (${widget.driverPhone})'
+        : '';
+    return '🚖 Rickbo सफ़र जारी है\n'
+        '${widget.fromZone} → ${widget.toZone}\n'
+        'किराया: ₹${widget.fare}\n'
+        '$driverLine\n'
+        'लाइव लोकेशन देखें: ${_url ?? ""}';
+  }
+
+  void _openSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('सफ़र शेयर करें',
+                    style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w800, color: ink),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 4),
+                Text('परिवार या दोस्तों को भेजें — वो लाइव देख सकेंगे',
+                    style: TextStyle(fontSize: 13, color: muted),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 18),
+                _ShareOption(
+                  icon: Icons.chat_bubble,
+                  iconColor: const Color(0xFF25D366), // WhatsApp green
+                  title: 'WhatsApp पर भेजें',
+                  subtitle: 'मैसेज कॉपी हो गया — अब WhatsApp खोलें',
+                  onTap: () async {
+                    final text = _shareText();
+                    await Clipboard.setData(ClipboardData(text: text));
+                    if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('मैसेज कॉपी हो गया — अब WhatsApp खोलकर पेस्ट करें'),
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                _ShareOption(
+                  icon: Icons.sms,
+                  iconColor: blue,
+                  title: 'SMS भेजें',
+                  subtitle: 'मैसेज कॉपी हो गया — SMS ऐप खोलें',
+                  onTap: () async {
+                    final text = _shareText();
+                    await Clipboard.setData(ClipboardData(text: text));
+                    if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('मैसेज कॉपी हो गया — अब SMS खोलें'),
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                _ShareOption(
+                  icon: Icons.link,
+                  iconColor: ink,
+                  title: 'केवल लिंक कॉपी करें',
+                  subtitle: _url ?? '',
+                  onTap: () async {
+                    if (_url != null) {
+                      await Clipboard.setData(ClipboardData(text: _url!));
+                    }
+                    if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('लिंक कॉपी हो गया')),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 6),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_built || _url == null) {
+      return const SizedBox(
+        height: 52,
+        child: Center(
+          child: SizedBox(
+            width: 24, height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.4),
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _openSheet,
+        icon: const Icon(Icons.share_location, color: blue),
+        label: const Text(
+          'सफ़र शेयर करें — परिवार को भेजें',
+          style: TextStyle(
+            color: blue,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          side: const BorderSide(color: blue, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareOption extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  const _ShareOption({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 15,
+                          color: ink,
+                          fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: TextStyle(fontSize: 12, color: muted),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: muted),
+          ],
+        ),
+      ),
     );
   }
 }

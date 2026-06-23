@@ -74,6 +74,8 @@ screenshots/
 
 # Local-only working docs (not for public repo)
 plans/
+/BUGFIX-*.md
+/FIREBASE-SETUP.md
 
 # Not for public repo (vendor / leak-suspect docs)
 CLAUDE-FABLE-5.md

@@ -70,3 +70,8 @@ admin_web/
 - Zones are hard-coded on the server; this page is **read-only** by
   design (changing a zone would need a backend deploy + Flutter rebuild
   since `packages/core/lib/zones.dart` mirrors the same data).
+
+## Screenshots
+
+[`docs/screenshots/`](docs/screenshots/) — login, dashboard, drivers,
+sos, zones.

@@ -5,9 +5,23 @@ import 'package:rickbo_core/rickbo_core.dart';
 class RideOtpScreen extends StatefulWidget {
   final String rideId;
   final int fare;
+  final String fromZone;
   final String toZone;
+  final double pickupLat;
+  final double pickupLng;
   final String userName;
-  const RideOtpScreen({super.key, required this.rideId, required this.fare, required this.toZone, required this.userName});
+  final int passengerCount;
+  const RideOtpScreen({
+    super.key,
+    required this.rideId,
+    required this.fare,
+    required this.fromZone,
+    required this.toZone,
+    required this.pickupLat,
+    required this.pickupLng,
+    required this.userName,
+    required this.passengerCount,
+  });
 
   @override
   State<RideOtpScreen> createState() => _RideOtpScreenState();
@@ -32,12 +46,17 @@ class _RideOtpScreenState extends State<RideOtpScreen> {
     try {
       await RickboApi().startRide(widget.rideId, _ctrl.text.trim());
       if (!mounted) return;
-      // Phase 5: voice prompt on ride start.
       RickboVoice.instance.say('सफ़र शुरू');
-      context.go('/ride/finish', extra: {
+      // ONGOING state → full-screen navigation to destination (Bug 2 fix).
+      context.go('/ride/ongoing', extra: {
         'rideId': widget.rideId,
         'fare': widget.fare,
+        'fromZone': widget.fromZone,
         'toZone': widget.toZone,
+        'pickupLat': widget.pickupLat,
+        'pickupLng': widget.pickupLng,
+        'userName': widget.userName,
+        'passengerCount': widget.passengerCount,
       });
     } catch (e) {
       setState(() => _busy = false);

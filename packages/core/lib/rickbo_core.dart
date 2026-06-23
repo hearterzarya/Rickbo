@@ -10,6 +10,7 @@ export 'api/api_client.dart';
 export 'api/rickbo_api.dart';
 export 'api/admin_api.dart';
 export 'api/rickbo_socket.dart';
+export 'api/routing.dart';
 export 'widgets/hindi_error.dart';
 export 'widgets/empty_state.dart';
 export 'widgets/voice.dart';

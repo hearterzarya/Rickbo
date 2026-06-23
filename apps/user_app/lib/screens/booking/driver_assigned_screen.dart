@@ -56,12 +56,42 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
   }
 
   void _showArrivedDialog() {
+    final otp = ref.read(activeRideProvider)?.otp;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('🛺 रिक्शा आ गई!', style: TextStyle()),
-        content: Text('ड्राइवर को OTP बताएँ: ${ref.read(activeRideProvider)?.otp ?? ''}',
-            style: TextStyle(fontSize: 18)),
+        title: const Text('🛺 रिक्शा आ गई!'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('ड्राइवर को OTP बताएँ:', style: TextStyle(fontSize: 15)),
+            const SizedBox(height: 12),
+            if (otp != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: tintCyan,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: cyan, width: 2),
+                ),
+                child: Text(
+                  otp,
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    color: blue,
+                    letterSpacing: 8,
+                  ),
+                ),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('OTP आ रहा है…',
+                    style: TextStyle(fontSize: 16, color: muted)),
+              ),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ठीक है')),
         ],
@@ -158,31 +188,77 @@ class _DriverAssignedScreenState extends ConsumerState<DriverAssignedScreen> {
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(color: card, borderRadius: BorderRadius.circular(20), border: Border.all(color: line)),
+                    decoration: BoxDecoration(
+                      color: ride?.otp != null ? tintCyan : card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: ride?.otp != null ? cyan : line, width: ride?.otp != null ? 2 : 1),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('OTP (ड्राइवर को बताएँ जब रिक्शा पहुँचे)',
-                            style: TextStyle(color: muted, fontSize: 13)),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(4, (i) {
-                            final digit = (ride?.otp ?? '----').split('').elementAtOrNull(i) ?? '•';
-                            return Container(
-                              width: 56, height: 64,
-                              decoration: BoxDecoration(
-                                color: tintCyan,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: cyan, width: 1.5),
-                              ),
-                              child: Center(
-                                child: Text(digit,
-                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: blue)),
-                              ),
-                            );
-                          }),
+                        Text(
+                          ride?.otp != null
+                              ? '🔐 OTP — ड्राइवर को बताएँ जब रिक्शा पहुँचे'
+                              : 'OTP आ रहा है…',
+                          style: TextStyle(
+                            color: ride?.otp != null ? blue : muted,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
+                        const SizedBox(height: 12),
+                        if (ride?.otp == null)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(4, (i) => Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Container(
+                                width: 56, height: 64,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFAFAFA),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: line),
+                                ),
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 20, height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: blue),
+                                  ),
+                                ),
+                              ),
+                            )),
+                          )
+                        else
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(4, (i) {
+                              final digit = ride!.otp!.split('').elementAtOrNull(i) ?? '•';
+                              return Container(
+                                width: 56, height: 64,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: cyan, width: 1.5),
+                                ),
+                                child: Center(
+                                  child: Text(digit,
+                                      style: const TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w900,
+                                        color: blue,
+                                        letterSpacing: 2,
+                                      )),
+                                ),
+                              );
+                            }),
+                          ),
+                        if (ride?.otp != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            '⚠️ सिर्फ ड्राइवर को मुँह से बताएँ — SMS/SMS-app पर न लिखें',
+                            style: TextStyle(color: muted, fontSize: 11),
+                          ),
+                        ],
                       ],
                     ),
                   ),

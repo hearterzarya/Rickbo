@@ -21,7 +21,12 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // targetSdk pinned to 34 (Android 14) instead of flutter.targetSdkVersion
+        // (36) because Android 15+ enforces edge-to-edge, and the FlutterActivity
+        // does not yet handle insets correctly on this software-only emulator
+        // (the SurfaceView never gets a real size -> black screen). Bump back to
+        // flutter.targetSdkVersion once we're running on real devices.
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

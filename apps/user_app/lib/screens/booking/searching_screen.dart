@@ -287,7 +287,7 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
           ),
           // Body content.
           Expanded(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [

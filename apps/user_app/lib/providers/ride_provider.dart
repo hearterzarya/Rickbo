@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rickbo_core/rickbo_core.dart';
+import 'auth_provider.dart';
 
 /// Holds the active ride the user is in. Created on POST /rides, mutated by
 /// socket events (ride:matched, ride:arrived, ride:started, ride:completed,
@@ -47,8 +48,12 @@ class ActiveRide {
     int? fare,
     String? otp,
     Map<String, dynamic>? driver,
+    double? pickupLat,
+    double? pickupLng,
     double? driverLat,
     double? driverLng,
+    String? fromZone,
+    String? toZone,
     String? cancelReason,
     String? shareToken,
     String? shareGroupId,
@@ -60,7 +65,7 @@ class ActiveRide {
         fare: fare ?? this.fare,
         otp: otp ?? this.otp,
         driver: driver ?? this.driver,
-        pickupLat: pickupLat ?? this.pickupLng,
+        pickupLat: pickupLat ?? this.pickupLat,
         pickupLng: pickupLng ?? this.pickupLng,
         driverLat: driverLat ?? this.driverLat,
         driverLng: driverLng ?? this.driverLng,
@@ -85,8 +90,23 @@ final activeRideProvider =
     StateNotifierProvider<ActiveRideNotifier, ActiveRide?>((ref) => ActiveRideNotifier());
 
 /// One shared socket per session. Both the user and driver apps keep one.
+/// Lifecycle is tied to the auth token: when the user logs in we connect;
+/// on logout we tear down. ref.onDispose also kills the inner socket but
+/// keeps the registered handler list so the next login re-binds.
 final socketProvider = Provider<RickboSocket>((ref) {
   final s = RickboSocket();
-  ref.onDispose(s.dispose);
+  ref.listen(authProvider, (prev, next) async {
+    if (next.token != null && next.token!.isNotEmpty) {
+      try {
+        final base = await ApiClient().getBaseUrl();
+        await s.connect(baseUrl: base, token: next.token!);
+      } catch (_) {
+        // best-effort — screens will retry via their own state changes
+      }
+    } else {
+      s.disposeAll();
+    }
+  });
+  ref.onDispose(s.disposeAll);
   return s;
 });

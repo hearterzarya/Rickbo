@@ -55,4 +55,23 @@ class HindiError {
       duration: const Duration(seconds: 3),
     ));
   }
+
+  /// Maps a backend error to a typed action the UI can take without
+  /// re-parsing strings. Returns null for unrecognised errors.
+  static ErrorAction? actionOf(Object error) {
+    final msg = messageOf(error);
+    if (msg.contains('सब्सक्रिप्शन') && (msg.contains('ख़त्म') || msg.contains('समाप्त'))) {
+      return ErrorAction.subscriptionExpired;
+    }
+    if (msg.toLowerCase().contains('suspended') || msg.contains('निलंबित')) {
+      return ErrorAction.accountSuspended;
+    }
+    if (msg.contains('location') || msg.contains('Location') || msg.contains('लोकेशन')) {
+      return ErrorAction.locationMissing;
+    }
+    return null;
+  }
 }
+
+/// Actions the UI can take based on a backend error message.
+enum ErrorAction { subscriptionExpired, accountSuspended, locationMissing }

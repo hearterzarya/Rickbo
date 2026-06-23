@@ -26,6 +26,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _loadStats();
+    // Reconcile online state when returning from a completed ride. The home
+    // screen disposes when the driver enters a ride, so we re-read the
+    // server's truth on every entry. If the server says we're still online,
+    // resume the location heartbeat without re-calling goOnline() (that
+    // would 409 since we're already online). This is the post-Bug-4 fix —
+    // ride complete must NOT flip the driver offline.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reconcileOnlineState());
+  }
+
+  Future<void> _reconcileOnlineState() async {
+    final auth = ref.read(driverAuthProvider);
+    final me = auth.me;
+    if (me == null) return;
+    final serverOnline = me.isOnline;
+    if (serverOnline && !_isOnline) {
+      // Server still has us online (e.g. we just finished a ride). Resume
+      // heartbeat so we keep emitting location + accept new offers.
+      setState(() => _isOnline = true);
+      _locTimer?.cancel();
+      _locTimer = Timer.periodic(const Duration(seconds: 12), (_) => _heartbeat());
+    } else if (!serverOnline && _isOnline) {
+      // Server says offline (admin suspended, etc.). Sync UI down.
+      _locTimer?.cancel();
+      setState(() => _isOnline = false);
+    }
   }
 
   @override
@@ -79,10 +104,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _locTimer?.cancel();
       _locTimer = Timer.periodic(const Duration(seconds: 12), (_) => _heartbeat());
     } catch (e) {
-      setState(() {
-        _busy = false;
-        _locationError = 'Server से बात नहीं हो पाई';
-      });
+      final action = HindiError.actionOf(e);
+      final msg = HindiError.messageOf(e);
+      // Backend-rejected goOnline → show real reason + route to renewal/suspended screen.
+      if (action == ErrorAction.subscriptionExpired) {
+        if (!mounted) return;
+        HindiError.show(context, e);
+        context.push('/subscription');
+      } else if (action == ErrorAction.accountSuspended) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('अकाउंट निलंबित'),
+            content: const Text('आपका अकाउंट निलंबित है। Rickbo हेल्पलाइन पर संपर्क करें।'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('ठीक है')),
+            ],
+          ),
+        );
+      } else {
+        setState(() {
+          _busy = false;
+          _locationError = msg;
+        });
+      }
     }
   }
 
@@ -146,12 +192,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
               const SizedBox(height: 16),
               if (me != null) _ProfileCard(me: me, isOnline: _isOnline),
+              if (me != null && me.subscriptionExpired) ...[
+                const SizedBox(height: 12),
+                _SubscriptionBanner(me: me),
+              ],
               const SizedBox(height: 16),
               // Live map showing driver location + zone context.
               if (_pos != null)
@@ -235,7 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _StatusGrid(stats: _stats),
               const SizedBox(height: 24),
               _TodayCard(),
-              const Spacer(),
+              const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: tintCyan, borderRadius: BorderRadius.circular(14)),
@@ -438,6 +488,65 @@ class _TodayCard extends StatelessWidget {
           ),
           Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.7)),
         ],
+      ),
+    );
+  }
+}
+
+/// Red banner shown when the driver's subscription has expired.
+/// Tapping routes to the renewal screen (call to support — no in-app payment in MVP).
+class _SubscriptionBanner extends StatelessWidget {
+  final DriverModel me;
+  const _SubscriptionBanner({required this.me});
+
+  @override
+  Widget build(BuildContext context) {
+    final daysAgo = me.subscriptionValidUntil != null
+        ? DateTime.now().difference(me.subscriptionValidUntil!).inDays
+        : 0;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/subscription'),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.red.shade200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('सब्सक्रिप्शन ख़त्म हो गई',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF8B0000))),
+                    const SizedBox(height: 2),
+                    Text(
+                      daysAgo > 0
+                          ? '$daysAgo दिन पहले ख़त्म हुई — रिन्यू करें'
+                          : 'ऑनलाइन जाने के लिए रिन्यू करें',
+                      style: TextStyle(color: Colors.red.shade900, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.red.shade400),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -9,6 +9,12 @@
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
+        <!-- Disable Impeller so the app renders with Skia on the
+             software-only Android 17 emulator (emulator-5554).
+             Remove this meta-data once we ship to devices with real GPUs. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

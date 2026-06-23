@@ -5,6 +5,8 @@ class UserModel {
   final String? photoUrl;
   final String? fcmToken;
   final int trustScore;
+  final String? emergencyContactName;
+  final String? emergencyContactPhone;
 
   const UserModel({
     required this.id,
@@ -13,6 +15,8 @@ class UserModel {
     this.photoUrl,
     this.fcmToken,
     this.trustScore = 0,
+    this.emergencyContactName,
+    this.emergencyContactPhone,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -22,6 +26,8 @@ class UserModel {
         photoUrl: json['photoUrl'] as String?,
         fcmToken: json['fcmToken'] as String?,
         trustScore: (json['trustScore'] as num?)?.toInt() ?? 0,
+        emergencyContactName: json['emergencyContactName'] as String?,
+        emergencyContactPhone: json['emergencyContactPhone'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -31,5 +37,7 @@ class UserModel {
         if (photoUrl != null) 'photoUrl': photoUrl,
         if (fcmToken != null) 'fcmToken': fcmToken,
         'trustScore': trustScore,
+        if (emergencyContactName != null) 'emergencyContactName': emergencyContactName,
+        if (emergencyContactPhone != null) 'emergencyContactPhone': emergencyContactPhone,
       };
 }

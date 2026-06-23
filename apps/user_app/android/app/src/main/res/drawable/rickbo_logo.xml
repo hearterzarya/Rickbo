@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rickbo brand icon — orange e-rickshaw silhouette on white circle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- background circle -->
+    <path
+        android:fillColor="#FF6B00"
+        android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0" />
+
+    <!-- rickshaw body (rounded canopy shape) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,52 Q30,38 44,38 L70,38 Q80,38 80,50 L80,64 Q80,68 76,68 L72,68 Q72,73 66,73 Q60,73 60,68 L46,68 Q46,73 40,73 Q34,73 34,68 L30,68 Q26,68 26,64 Z" />
+
+    <!-- driver head circle -->
+    <path
+        android:fillColor="#1F2937"
+        android:pathData="M68,28m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
+
+    <!-- canopy roof line -->
+    <path
+        android:fillColor="#1F2937"
+        android:pathData="M34,46 L66,46 L66,50 L34,50 Z" />
+</vector>

@@ -73,23 +73,28 @@ class _RideFinishScreenState extends State<RideFinishScreen> {
     Future.delayed(const Duration(seconds: 3), () async {
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
+      // Quick GPS read (1.5s) — if it fails, send 0,0; backend logs the SOS
+      // regardless. The ride_finish screen has no in-flight location stream
+      // like ride_going/ongoing do, so we don't have a cached _driverPos.
       double lat = 0, lng = 0;
       try {
         final p = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 4),
-        ).timeout(const Duration(seconds: 4), onTimeout: () => throw Exception('gps timeout'));
+          timeLimit: const Duration(seconds: 1),
+        ).timeout(const Duration(seconds: 1), onTimeout: () => throw Exception('gps timeout'));
         lat = p.latitude; lng = p.longitude;
       } catch (_) {}
+      // Only claim "मदद आ रही है" if POST succeeded.
       try {
         await RickboApi().raiseSos(rideId: widget.rideId, lat: lat, lng: lng);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('SOS भेज दिया — मदद आ रही है')),
+        );
       } catch (e) {
-        if (mounted) HindiError.show(context, e);
+        if (!mounted) return;
+        HindiError.show(context, e);
       }
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('SOS भेज दिया — मदद आ रही है')),
-      );
     });
   }
 

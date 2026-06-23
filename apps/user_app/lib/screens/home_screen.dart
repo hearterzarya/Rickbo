@@ -301,21 +301,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (mode == 'reserve')
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('यात्री:', style: TextStyle(color: muted, fontSize: 14)),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        onPressed: pax > 1 ? () => setSheet(() => pax--) : null,
-                        icon: const Icon(Icons.remove_circle_outline, color: blue),
+                      Row(
+                        children: [
+                          Text('यात्री:', style: TextStyle(color: muted, fontSize: 14)),
+                          const SizedBox(width: 12),
+                          IconButton(
+                            onPressed: pax > 1 ? () => setSheet(() => pax--) : null,
+                            icon: const Icon(Icons.remove_circle_outline, color: blue),
+                          ),
+                          Text('$pax', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
+                          // 4-pax is the legal max per Section 3 of CLAUDE.md.
+                          // Tapping + at pax==4 shows a Hindi toast suggesting
+                          // booking a 2nd rickshaw instead of silently blocking.
+                          IconButton(
+                            onPressed: () {
+                              if (pax >= 4) {
+                                setSheet(() {});
+                                _toast('4 से ज़्यादा नहीं — दूसरी रिक्शा बुक करें');
+                              } else {
+                                setSheet(() => pax++);
+                              }
+                            },
+                            icon: const Icon(Icons.add_circle, color: blue),
+                          ),
+                          const Spacer(),
+                          Text('(1–4)', style: TextStyle(color: muted, fontSize: 12)),
+                        ],
                       ),
-                      Text('$pax', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: ink)),
-                      IconButton(
-                        onPressed: pax < 4 ? () => setSheet(() => pax++) : null,
-                        icon: const Icon(Icons.add_circle, color: blue),
-                      ),
-                      const Spacer(),
-                      Text('(1–4)', style: TextStyle(color: muted, fontSize: 12)),
+                      if (pax >= 4)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6, left: 56),
+                          child: Text(
+                            '4 से ज़्यादा यात्री हों तो दूसरी रिक्शा बुक करें',
+                            style: TextStyle(color: red, fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ),
                     ],
                   )
                 else

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash image — large white rickshaw silhouette on orange background. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+
+    <!-- Center rickshaw body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,120 Q70,90 100,90 L160,90 Q185,90 185,116 L185,150 Q185,160 175,160 L165,160 Q165,172 150,172 Q135,172 135,160 L105,160 Q105,172 90,172 Q75,172 75,160 L70,160 Q60,160 60,150 Z" />
+
+    <!-- Driver head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M155,60m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+
+    <!-- Canopy bar -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,110 L155,110 L155,118 L75,118 Z" />
+
+    <!-- Brand text 'Rickbo' rendered as a simple path. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,205 L60,205 L60,215 L75,215 L75,220 L60,220 L60,225 L70,225 L70,230 L55,230 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M82,205 L92,205 Q100,205 100,213 Q100,218 95,220 L100,230 L92,230 L88,222 L88,230 L82,230 Z M88,210 L88,217 L92,217 Q94,217 94,213.5 Q94,210 92,210 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M105,205 L115,205 Q120,205 120,210 L120,225 Q120,230 115,230 L105,230 Z M111,210 L111,225 L114,225 Q115,225 115,223 L115,212 Q115,210 114,210 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M122,205 L122,230 L138,230 L138,225 L128,225 L128,220 L135,220 L135,215 L128,215 L128,210 L138,210 L138,205 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M140,205 L150,205 Q160,205 160,213 Q160,218 156,220 Q162,221 162,228 L162,230 L155,230 L155,224 Q155,222 153,222 L146,222 L146,230 L140,230 Z M146,210 L146,217 L150,217 Q153,217 153,213.5 Q153,210 150,210 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M170,205 L170,230 L185,230 L185,225 L176,225 L176,220 L183,220 L183,215 L176,215 L176,210 L185,210 L185,205 Z" />
+</vector>

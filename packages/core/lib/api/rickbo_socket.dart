@@ -1,4 +1,5 @@
 import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'api_client.dart';
 
 /// Thin wrapper around socket.io-client that reads the current API base URL
 /// from [ApiClient] and attaches the auth JWT as `auth.token` on connect.
@@ -15,6 +16,10 @@ class RickboSocket {
   io.Socket? _socket;
   String? _baseUrl;
   String? _token;
+  // Guards against concurrent connect() calls racing each other — without
+  // this, a fast login→logout→login sequence (or two provider listeners
+  // firing back-to-back) can build two sockets and leak one. P0-B5 fix.
+  Future<void>? _connecting;
 
   /// Persistent handler store. Keyed by event name, list of handlers
   /// (we keep a list in case the same event is registered from multiple
@@ -25,10 +30,35 @@ class RickboSocket {
   io.Socket? get raw => _socket;
   bool get isConnected => _socket?.connected ?? false;
 
+  /// Warm up DNS cache so the subsequent socket connection doesn't hit
+  /// errno=7 "No address associated with hostname" on cold app starts.
+  Future<void> _warmUpDns() async {
+    try {
+      await ApiClient().dio.get('/pricing/zones').timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // best-effort — if it fails, socket connect() will still try
+    }
+  }
+
   Future<void> connect({
     required String baseUrl,
     required String token,
   }) async {
+    // Coalesce concurrent connect() calls — return the in-flight one if any.
+    if (_connecting != null) {
+      // ignore: avoid_print
+      print('[ws] RickboSocket.connect: join in-flight connect');
+      return _connecting!;
+    }
+    final completer = _connecting = _doConnect(baseUrl, token);
+    try {
+      await completer;
+    } finally {
+      _connecting = null;
+    }
+  }
+
+  Future<void> _doConnect(String baseUrl, String token) async {
     // ignore: avoid_print
     print('[ws] RickboSocket.connect called baseUrl=$baseUrl tokenLen=${token.length}');
     if (_socket != null && _baseUrl == baseUrl && _token == token && _socket!.connected) {
@@ -36,6 +66,8 @@ class RickboSocket {
       print('[ws] RickboSocket.connect: already connected, skip');
       return;
     }
+    // Warm DNS before tearing down any existing socket
+    await _warmUpDns();
     dispose();
     _baseUrl = baseUrl;
     _token = token;

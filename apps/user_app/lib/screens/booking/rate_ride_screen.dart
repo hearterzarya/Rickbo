@@ -30,14 +30,19 @@ class _RateRideScreenState extends State<RateRideScreen> {
         stars: _stars,
         comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
       );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('धन्यवाद! आपकी रेटिंग सेव हो गई।')),
+      );
+      context.go('/');
     } catch (e) {
-      if (mounted) HindiError.show(context, e);
+      // Only claim "सेव हो गई" if POST succeeded. On failure, HindiError
+      // shows the real reason and the user stays on this screen to retry.
+      if (mounted) {
+        HindiError.show(context, e);
+        setState(() => _sending = false);
+      }
     }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('धन्यवाद! आपकी रेटिंग सेव हो गई।')),
-    );
-    if (mounted) context.go('/');
   }
 
   void _openComplaintSheet() {
@@ -133,7 +138,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
       backgroundColor: bg,
       appBar: AppBar(title: const Text('रेटिंग दें'), automaticallyImplyLeading: false),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

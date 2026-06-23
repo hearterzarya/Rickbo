@@ -44,10 +44,17 @@ class RickboApi {
     return UserModel.fromJson(r.data as Map<String, dynamic>);
   }
 
-  Future<UserModel> updateUserMe({String? name, String? fcmToken}) async {
+  Future<UserModel> updateUserMe({
+    String? name,
+    String? fcmToken,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
+  }) async {
     final r = await _c.dio.patch('/users/me', data: {
       if (name != null) 'name': name,
       if (fcmToken != null) 'fcmToken': fcmToken,
+      if (emergencyContactName != null) 'emergencyContactName': emergencyContactName,
+      if (emergencyContactPhone != null) 'emergencyContactPhone': emergencyContactPhone,
     });
     return UserModel.fromJson(r.data as Map<String, dynamic>);
   }
@@ -164,10 +171,14 @@ class RickboApi {
     });
   }
 
-  // The share URL is built from the backend's PUBLIC hostname + share token.
-  // Backend now returns shareToken on the ride object; the apps stitch the URL together.
+  // The share URL is built from the PUBLIC share base (set in Dev Settings)
+  // not the API base — the API base is the dev LAN address (e.g. 192.168.x.x)
+  // which family members off-network can't reach. Defaults to Railway prod.
+  // If no public share base is set we fall back to the API base so dev still works.
   String buildShareUrl({required String baseUrl, required String shareToken}) {
-    final root = baseUrl.replaceAll(RegExp(r'/+$'), '');
+    const publicBase = String.fromEnvironment('RICKBO_PUBLIC_BASE',
+        defaultValue: 'https://rickbo-production.up.railway.app');
+    final root = publicBase.replaceAll(RegExp(r'/+$'), '');
     return '$root/s/$shareToken';
   }
 

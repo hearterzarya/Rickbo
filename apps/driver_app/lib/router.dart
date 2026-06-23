@@ -12,7 +12,9 @@ import 'screens/home_screen.dart';
 import 'screens/ride/incoming_offer_screen.dart';
 import 'screens/ride/ride_going_screen.dart';
 import 'screens/ride/ride_otp_screen.dart';
+import 'screens/ride/ride_ongoing_screen.dart';
 import 'screens/ride/ride_finish_screen.dart';
+import 'screens/subscription_screen.dart';
 import 'screens/ride/rate_user_screen.dart';
 import 'screens/dev_settings_screen.dart';
 
@@ -141,10 +143,30 @@ GoRouter buildRouter(WidgetRef ref) {
         builder: (ctx, st) {
           final m = st.extra as Map;
           return RideOtpScreen(
+            rideId: m['rideId'] as String,
+            fare: (m['fare'] as num).toInt(),
+            fromZone: m['fromZone']?.toString() ?? '',
+            toZone: m['toZone']?.toString() ?? '',
+            pickupLat: (m['pickupLat'] as num).toDouble(),
+            pickupLng: (m['pickupLng'] as num).toDouble(),
+            userName: m['userName']?.toString() ?? 'यात्री',
+            passengerCount: (m['passengerCount'] as num?)?.toInt() ?? 1,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/ride/ongoing',
+        builder: (ctx, st) {
+          final m = st.extra as Map;
+          return RideOngoingScreen(
             rideId: m['rideId'],
             fare: m['fare'],
-            toZone: m['toZone'],
+            fromZone: m['fromZone'] ?? '',
+            toZone: m['toZone'] ?? '',
+            pickupLat: (m['pickupLat'] as num).toDouble(),
+            pickupLng: (m['pickupLng'] as num).toDouble(),
             userName: m['userName'] ?? 'यात्री',
+            passengerCount: (m['passengerCount'] as num?)?.toInt() ?? 1,
           );
         },
       ),
@@ -167,6 +189,7 @@ GoRouter buildRouter(WidgetRef ref) {
         },
       ),
       GoRoute(path: '/dev-settings', builder: (_, __) => const DevSettingsScreen()),
+      GoRoute(path: '/subscription', builder: (_, __) => const SubscriptionScreen()),
     ],
   );
 }

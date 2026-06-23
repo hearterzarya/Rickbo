@@ -27,19 +27,27 @@ class _RateUserScreenState extends State<RateUserScreen> {
   Future<void> _submit() async {
     setState(() => _sending = true);
     try {
-      // 'by' here is the driverId — server uses that to update user trustScore on low ratings.
-      // We pass the rideId as 'by' placeholder; the safety service just stores it.
-      // In Phase 5 we'll plumb the real driverId through.
+      // The backend's POST /ratings reads `by` from the JWT (driverId), NOT
+      // from the request body — so we deliberately don't send `by`. If stars <= 2
+      // the safety service decrements the passenger's trustScore.
       await RickboApi().rateRide(
         rideId: widget.rideId,
         stars: _stars,
         comment: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('धन्यवाद — रेटिंग सेव हो गई')),
+      );
+      context.go('/');
     } catch (e) {
-      if (mounted) HindiError.show(context, e);
+      // On failure, stay on screen so the driver can retry. Don't claim
+      // success and don't navigate away from a partially-sent rating.
+      if (mounted) {
+        HindiError.show(context, e);
+        setState(() => _sending = false);
+      }
     }
-    if (!mounted) return;
-    context.go('/');
   }
 
   @override

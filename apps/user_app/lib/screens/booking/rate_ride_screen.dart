@@ -169,7 +169,7 @@ class _RateRideScreenState extends State<RateRideScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
               _sending
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(onPressed: _submit, child: const Text('भेजें')),

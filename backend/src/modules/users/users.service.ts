@@ -13,6 +13,7 @@ export class UsersService {
   // multi-byte text correctly. We keep Prisma for reads, and use the
   // raw path for any field that might contain non-ASCII.
   async create(data: { phone: string; name?: string; emergencyContactName?: string; emergencyContactPhone?: string }) {
+    this.logger.log(`create() called: phone=${data.phone} name=${JSON.stringify(data.name)} hasNonAscii=${[data.name, data.emergencyContactName].some((v) => typeof v === 'string' && /[^\x00-\x7F]/.test(v || ''))}`);
     const hasNonAscii = [data.name, data.emergencyContactName].some(
       (v) => typeof v === 'string' && /[^\x00-\x7F]/.test(v),
     );

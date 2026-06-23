@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Req, Body } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Request } from 'express';
 
 // Debug-only controller to verify whether Hindi text round-trips through
 // Prisma + the Neon pooler. Public (no JWT) so we can curl it directly.
@@ -31,6 +32,26 @@ export class DebugUtf8Controller {
       q1_length: q1[0]?.x?.length,
       q2_after_insert: q2[0]?.x,
       q2_db_length: q2[0]?.len,
+    };
+  }
+
+  // Echo back whatever NestJS sees in the request body. If the
+  // body-parser has already lost multi-byte characters, the response
+  // will show '?'. If it has not, it will show Hindi.
+  @Post('echo')
+  echo(@Body() body: unknown, @Req() req: Request) {
+    const buf = req.body as Buffer | undefined;
+    const bodyAsString =
+      typeof buf === 'string'
+        ? buf
+        : Buffer.isBuffer(buf)
+        ? buf.toString('utf-8')
+        : JSON.stringify(body);
+    return {
+      contentType: req.headers['content-type'],
+      bodySeenByNest: body,
+      rawBodyAsUtf8: bodyAsString,
+      bufferLength: Buffer.isBuffer(buf) ? buf.length : null,
     };
   }
 }

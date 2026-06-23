@@ -27,4 +27,32 @@ describe('PricingService', () => {
     it('zone C center → C', () => expect(s.resolveZone(29.6125, 78.3406)).toBe('C'));
     it('zone E center → E', () => expect(s.resolveZone(29.6105, 78.3522)).toBe('E'));
   });
+
+  describe('Fare-tamper protection', () => {
+    it('unknown from-zone throws (no silent fallback)', () => {
+      expect(() => s.getFare('Z', 'A', 'reserve', false)).toThrow(/Unknown from-zone/);
+    });
+    it('unknown to-zone throws (no silent fallback)', () => {
+      expect(() => s.getFare('A', 'Z', 'reserve', false)).toThrow(/Unknown to-zone/);
+    });
+    it('SQL-ish / empty string from-zone throws', () => {
+      expect(() => s.getFare('', 'A', 'reserve', false)).toThrow();
+      expect(() => s.getFare("' OR 1=1 --", 'A', 'reserve', false)).toThrow();
+    });
+    it('isValidZone accepts A–E', () => {
+      ['A', 'B', 'C', 'D', 'E'].forEach(z => expect(s.isValidZone(z)).toBe(true));
+    });
+    it('isValidZone rejects F, lowercase, empty', () => {
+      expect(s.isValidZone('F')).toBe(false);
+      expect(s.isValidZone('a')).toBe(false);
+      expect(s.isValidZone('')).toBe(false);
+      expect(s.isValidZone("'; DROP TABLE zones;--")).toBe(false);
+    });
+    it('getZoneById returns zone with center coords', () => {
+      const a = s.getZoneById('A');
+      expect(a).toBeDefined();
+      expect(a!.lat).toBeCloseTo(29.6039, 3);
+    });
+  });
 });
+

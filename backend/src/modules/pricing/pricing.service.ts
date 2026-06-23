@@ -36,7 +36,15 @@ const reserveTable: Record<string, Record<string, number>> = {
 export class PricingService {
   getFare(from: string, to: string, mode: string, isNight: boolean): number {
     const table = mode === 'reserve' ? reserveTable : shareTable;
-    const base = table[from]?.[to] ?? 10;
+    const row = table[from];
+    if (!row) {
+      // Unknown FROM zone — don't silently fall back; let the caller handle.
+      throw new Error(`Unknown from-zone: ${from}`);
+    }
+    const base = row[to];
+    if (base === undefined) {
+      throw new Error(`Unknown to-zone: ${to} (from ${from})`);
+    }
     return base + (isNight ? 5 : 0);
   }
 
@@ -60,6 +68,17 @@ export class PricingService {
       }
     }
     return nearest.id;
+  }
+
+  /** Returns true if `zoneId` is one of the known Rickbo zones. Used by ride
+   * creation to reject tampered client values. */
+  isValidZone(zoneId: string): boolean {
+    return ZONES.some(z => z.id === zoneId);
+  }
+
+  /** Lookup a zone by id; returns undefined if unknown. */
+  getZoneById(zoneId: string): Zone | undefined {
+    return ZONES.find(z => z.id === zoneId);
   }
 }
 

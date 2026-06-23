@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { SmsService } from '../sms/sms.service';
 
 const AUTO_SUSPEND_THRESHOLD = 3; // 3 complaints → SUSPENDED
 
@@ -11,6 +12,7 @@ export class SafetyService {
   constructor(
     private prisma: PrismaService,
     private realtime: RealtimeGateway,
+    private sms: SmsService,
   ) {}
 
   async createSos(data: {
@@ -38,7 +40,45 @@ export class SafetyService {
         lng: data.lng,
       });
     }
-    // TODO (Phase 5): also fire SMS via MSG91 to user's emergency contacts.
+    // Fire SMS to the SOS-raiser's emergency contact (best-effort, never
+    // throws). We notify the raiser's family — the OTHER party is already
+    // getting a realtime alert via socket above.
+    let contactPhone: string | null | undefined = null;
+    if (data.raisedBy === 'USER') {
+      contactPhone = (
+        await this.prisma.user.findUnique({
+          where: { id: ride.userId },
+          select: { emergencyContactPhone: true },
+        })
+      )?.emergencyContactPhone;
+    } else if (ride.driverId) {
+      // Drivers don't yet have an emergency contact field; fall back to the
+      // driver's own phone so the SMS path is exercisable in dev. Phase 5
+      // will add Driver.emergencyContactPhone.
+      contactPhone = (
+        await this.prisma.driver.findUnique({
+          where: { id: ride.driverId },
+          select: { phone: true },
+        })
+      )?.phone;
+    }
+    if (contactPhone) {
+      const result = await this.sms.sendEmergencySms(
+        contactPhone,
+        data.raisedBy,
+        data.rideId,
+        data.lat,
+        data.lng,
+      );
+      this.log.log(
+        `Emergency SMS for ride ${data.rideId}: sent=${result.sent}` +
+          (result.reason ? ` reason=${result.reason}` : ''),
+      );
+    } else {
+      this.log.log(
+        `No emergency contact on file for ride ${data.rideId} (raisedBy=${data.raisedBy}) — SMS skipped`,
+      );
+    }
     return event;
   }
 

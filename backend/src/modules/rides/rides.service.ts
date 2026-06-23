@@ -38,17 +38,38 @@ export class RidesService {
         throw new BadRequestException('1–4 यात्री ही बुक कर सकते हैं');
       }
     }
-    // सर्वर-साइड ज़ोन — client भरोसेमंद नहीं। fare manipulation रोकने के लिए।
+    // Sanity: pickup coordinates must be finite numbers in a sane range.
+    // (Defends against a malformed payload producing NaN fares.)
+    if (
+      !Number.isFinite(dto.pickupLat) || !Number.isFinite(dto.pickupLng) ||
+      Math.abs(dto.pickupLat) > 90 || Math.abs(dto.pickupLng) > 180
+    ) {
+      throw new BadRequestException('पिकअप की जगह सही नहीं है');
+    }
+    // Server-derive the pickup zone from GPS — never trust the client.
     const serverFromZone = this.pricing.resolveZone(dto.pickupLat, dto.pickupLng);
-    // Destination zone भी server derive करता है (अभी client value same रखते हैं
-    // क्योंकि drop lat/lng client से आता है; resolveZone nearest-center fallback है)।
-    const serverToZone = this.pricing.resolveZone(dto.pickupLat + 0.001, dto.pickupLng + 0.001);
+    // Destination is picked by the user from a fixed list of zone IDs (per
+    // CLAUDE.md §6), so we still trust the value BUT we must validate it
+    // against the known zone table to reject a tampered fare-manipulation
+    // payload (e.g. {"toZone":"X"} which would otherwise crash the table lookup
+    // or — worse — silently fall back to the cheapest fare via `?? 10`).
+    const clientToZone = (dto.toZone || '').toUpperCase().trim();
+    if (!this.pricing.isValidZone(clientToZone)) {
+      throw new BadRequestException('गंतव्य ज़ोन सही नहीं है');
+    }
+    const serverToZone = clientToZone;
     const fare = this.pricing.getFare(
       serverFromZone,
       serverToZone,
       mode.toLowerCase(),
       this.pricing.isNightNow(),
     );
+    // Belt-and-suspenders: sanity-check the computed fare.
+    // Reserve is 20–40, Share is 10–20 (plus optional +5 night surcharge).
+    if (fare < 5 || fare > 60) {
+      this.log.error(`[fare-tamper] computed fare out of bounds: ${fare} (from=${serverFromZone}, to=${serverToZone}, mode=${mode})`);
+      throw new BadRequestException('किराया सही नहीं निकला — दोबारा कोशिश करें');
+    }
     // 10-char share token so passengers can send family a live status link.
     const shareToken = randomBytes(8).toString('base64url');
     // Phase 4: SHARE rides get a 2-min match window deadline. Per CLAUDE.md Section 6 Share.
@@ -330,21 +351,16 @@ export class RidesService {
     if (!ride || ride.driverId !== driverId) {
       throw new BadRequestException('यह सवारी आपकी नहीं है');
     }
-    // Transaction: ride complete + driver offline default. Driver can choose to stay online
-    // on frontend (UI dialog), but backend state shows offline until then.
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const r = await tx.ride.update({
-        where: { id: rideId },
-        data: { status: 'COMPLETED', completedAt: new Date() },
-      });
-      await tx.driver.update({
-        where: { id: driverId },
-        data: { isOnline: false },
-      });
-      return r;
+    // Mark the ride COMPLETED. Driver STAYS online — flipping isOnline=false
+    // here would force drivers offline after every ride, killing the day's
+    // flow. Offline is a deliberate user action (tap "ऑफलाइन" on home), not
+    // a side effect of completion.
+    const updated = await this.prisma.ride.update({
+      where: { id: rideId },
+      data: { status: 'COMPLETED', completedAt: new Date() },
     });
     this.realtime.emitToUser(ride.userId, 'ride:completed', { rideId });
-    this.realtime.emitToDriver(driverId, 'driver:offline', { reason: 'ride_completed' });
+    // No `driver:offline` emit. The driver is still available for offers.
     return updated;
   }
 
@@ -390,10 +406,15 @@ export class RidesService {
     });
     if (!ride) return null;
     return {
+      id: ride.id,
+      mode: ride.mode,
       status: ride.status,
       fromZone: ride.fromZone,
       toZone: ride.toZone,
       fare: ride.fare,
+      driverId: ride.driverId,
+      pickupLat: ride.pickupLat,
+      pickupLng: ride.pickupLng,
       driverName: ride.driver?.name ?? null,
       driverPhone: ride.driver?.phone ?? null,
       rickshawNumber: ride.driver?.rickshawNumber ?? null,

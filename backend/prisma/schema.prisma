@@ -10,15 +10,17 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  phone      String   @unique
-  name       String?
-  photoUrl   String?
-  fcmToken   String?
-  trustScore Int      @default(0)
-  role       UserRole @default(USER)
-  isBanned   Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id                    String   @id @default(cuid())
+  phone                 String   @unique
+  name                  String?
+  photoUrl              String?
+  fcmToken              String?
+  trustScore            Int      @default(0)
+  role                  UserRole @default(USER)
+  isBanned              Boolean  @default(false)
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt             DateTime @default(now())
 
   rides      Ride[]
 }

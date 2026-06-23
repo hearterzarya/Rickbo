@@ -8,7 +8,15 @@ export class UsersController {
   constructor(private users: UsersService) {}
 
   @Post()
-  create(@Body() body: { phone: string; name?: string }) {
+  create(
+    @Body()
+    body: {
+      phone: string;
+      name?: string;
+      emergencyContactName?: string;
+      emergencyContactPhone?: string;
+    },
+  ) {
     return this.users.create(body);
   }
 
@@ -22,7 +30,14 @@ export class UsersController {
   @Patch('me')
   updateMe(
     @Request() req: { user: JwtPayload },
-    @Body() body: { name?: string; fcmToken?: string; photoUrl?: string },
+    @Body()
+    body: {
+      name?: string;
+      fcmToken?: string;
+      photoUrl?: string;
+      emergencyContactName?: string;
+      emergencyContactPhone?: string;
+    },
   ) {
     return this.users.update(req.user.sub, body);
   }

@@ -52,6 +52,10 @@ export class DebugUtf8Controller {
       bodySeenByNest: body,
       rawBodyAsUtf8: bodyAsString,
       bufferLength: Buffer.isBuffer(buf) ? buf.length : null,
+      // Show all the ways the bytes could have been encoded so we
+      // can see which decoder the framework is using.
+      rawBodyAsLatin1: Buffer.isBuffer(buf) ? buf.toString('latin1') : null,
+      rawBodyAsHex: Buffer.isBuffer(buf) ? buf.toString('hex') : null,
     };
   }
 }

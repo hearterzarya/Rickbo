@@ -64,11 +64,11 @@ rickbo/
 │   ├── src/modules/{auth,users,drivers,rides,matching,pricing,safety,realtime}/
 │   └── prisma/schema.prisma
 ├── packages/core/           # Flutter shared: models, api client, zones, fare table, theme
-└── apps/
-    ├── user_app/            # Flutter
-    └── driver_app/          # Flutter
+├── apps/
+│   ├── user_app/            # Flutter
+│   └── driver_app/          # Flutter
+└── admin_web/               # Next.js 14 ops dashboard (Vercel). See admin_web/README.md
 ```
-(Admin/control room can be added later as a small Next.js app; not required for MVP launch.)
 
 ---
 

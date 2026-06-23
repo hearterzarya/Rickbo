@@ -10,6 +10,7 @@ import { PricingModule } from './modules/pricing/pricing.module';
 import { SafetyModule } from './modules/safety/safety.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DebugModule } from './debug/debug.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AdminModule } from './modules/admin/admin.module';
     SafetyModule,
     RealtimeModule,
     AdminModule,
+    DebugModule,
   ],
 })
 export class AppModule {}

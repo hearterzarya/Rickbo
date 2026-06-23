@@ -61,6 +61,12 @@ Rickbo/
 └── apps/
     ├── user_app/                 # Flutter — passenger app
     └── driver_app/               # Flutter — driver app (Hindi voice, big buttons)
+└── admin_web/                    # Next.js 14 — operations + safety dashboard (web only)
+    ├── app/
+    │   ├── (app)/                # authed pages: dashboard, users, drivers, rides, sos, zones
+    │   └── login/                # dev OTP login
+    ├── components/ui/            # shadcn primitives
+    └── lib/                      # api, auth (zustand), types, env, utils
 ```
 
 ---
@@ -71,7 +77,57 @@ Rickbo/
 
 **Frontend** — Flutter 3.44 (Dart) · Riverpod 2.5 · go_router 13 · dio 5 · socket_io_client 2 · firebase_auth + firebase_messaging · flutter_map (OpenStreetMap) · geolocator · flutter_tts (Hindi voice, offline)
 
-**Infra** — Railway (backend) · Neon (Postgres + PostGIS) · Firebase (auth + FCM) · OpenStreetMap (tiles)
+**Infra** — Railway (backend) · Neon (Postgres + PostGIS) · Firebase (auth + FCM) · OpenStreetMap (tiles) · Vercel (admin_web)
+
+---
+
+## 🖥️ Admin web (`admin_web/`)
+
+A small Next.js 14 + shadcn/ui dashboard for ops and safety. **Not** the
+driver or passenger app — for us (the team) only. Bilingual (Hindi +
+English), dark theme, calls the same Railway backend the apps use.
+
+| Page | What it shows |
+|---|---|
+| **Dashboard / डैशबोर्ड** | Live counts (users / drivers / rides / SOS) + 14-day ride sparkline |
+| **Users / यात्री** | All registered users, search by phone/name, last seen |
+| **Drivers / ड्राइवर** | All drivers, status, online toggle, subscription expiry, suspend/unsuspend |
+| **Rides / सवारी** | All rides with status, fare, zone, driver, OTP — filter by status |
+| **SOS / आपातकाल** | Active SOS events with map links, one-click **Mark Resolved** |
+| **Zones / क्षेत्र** | The 5 fixed Najibabad zones (lat/lng/radius) + **Open in OSM** link |
+
+### Login
+
+Two dev paths (controlled by `NEXT_PUBLIC_ADMIN_DEV_LOGIN`):
+
+1. **Dev login** (default in `.env.local`) — pick any role and a phone
+   number, get a JWT instantly. For local development only.
+2. **Real OTP** — uses the backend's `/auth/test-otp/start` and
+   `/auth/test-otp/verify` (same path the Flutter apps use). The OTP
+   shows in the response, paste it in.
+
+### Run locally
+
+```bash
+cd admin_web
+cp .env.example .env.local         # then edit
+npm install
+npm run dev                        # http://localhost:3000
+```
+
+The login screen takes:
+- `NEXT_PUBLIC_API_URL` — the backend to talk to (e.g. `https://rickbo-production.up.railway.app`)
+- `NEXT_PUBLIC_ADMIN_DEV_LOGIN` — `1` for dev-login, `0` for real OTP
+
+### Build for production
+
+```bash
+npm run build
+npm start
+```
+
+Deploy target: **Vercel** (one-click import, no env beyond the two
+above). Build output: `.next/`.
 
 ---
 

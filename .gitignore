@@ -51,6 +51,27 @@ _e2e_*.sh
 BOOKING_TEST_LOG.md
 screenshots/
 
+# Stray root-level screenshots / videos from ad-hoc Flutter debugging
+# (catch-all so the working tree doesn't fill with junk)
+/f?.png
+/f??.png
+/g?.png
+/r?.png
+/r??.png
+/s?.png
+/s??.png
+/t?.png
+/t??.png
+/screen?.png
+/screen??.png
+/screenshot.png
+/ui.xml
+/*.mp4
+/*.mov
+
+# Playwright screenshot session dir
+/.playwright-mcp/
+
 # Local-only working docs (not for public repo)
 plans/
 
